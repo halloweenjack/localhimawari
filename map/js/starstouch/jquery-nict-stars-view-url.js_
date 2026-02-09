@@ -1,0 +1,358 @@
+;(function($){
+/******************************************************************************/
+/** NICT STARS View URL for JQuery Plugin                                     */
+/******************************************************************************/
+/******************************************************************************/
+/** nictSTARSViewURL                                                          */
+/******************************************************************************/
+$.nictSTARSViewURL = {
+/******************************************************************************/
+/** nictSTARSViewURL.createURL                                                */
+/******************************************************************************/
+createURL : function(param)
+{
+  var strViewURL            = "";
+  var strShowDate           = null;
+  var strShowStartTime      = null;
+  var strShowEndTime        = null;
+  var strShowAutorunStart   = null;
+  var strShowAutorunEnd     = null;
+  var strShowAutorun        = null;
+  var strShowMarkerLeft     = null;
+  var strShowXScale         = null;
+  var strShowLeft           = null;
+  var strShowTimeZone       = null;
+  var strShowCalendarLocale = null;
+  var strShowList           = null;
+  var strEnvParam           = [];
+  var aryUrlParam           = [];
+
+  if (!param["base_url"]) {
+    throw new Error("base_url is not defined.");
+  } else if (typeof(param["base_url"]) == 'string') {
+    strViewURL = param["base_url"];
+  }
+  else {
+    throw new Error("base_url type is not string.");
+  }
+
+  if (!param["show_date"]) {
+    throw new Error("show_date is not defined.");
+  } else if (typeof(param["show_date"] == 'string')) {
+    strShowDate = new Date(param["show_date"]).toISOString();
+    aryUrlParam.push("sD=" + encodeURIComponent(strShowDate));
+  } else if (toString.call(param["show_date"] == '[object Date]')) {
+    strShowDate = param["show_date"].toISOString();
+    aryUrlParam.push("sD=" + encodeURIComponent(strShowDate));
+  } else {
+    throw new Error("show_date type is not string.");
+  }
+
+  if (!param["show_start_time"]) {
+    // DO NOTHING
+  } else if (typeof(param["show_start_time"] == 'string')) {
+    strShowStartTime = new Date(param["show_start_time"]).toISOString();
+    aryUrlParam.push("sST=" + encodeURIComponent(strShowStartTime));
+  } else if (toString.call(param["show_start_time"] == '[object Date]')) {
+    strShowStartTime = param["show_start_time"].toISOString();
+    aryUrlParam.push("sST=" + encodeURIComponent(strShowStartTime));
+  } else {
+    throw new Error("show_start_time type is not string.");
+  }
+
+  if (!param["show_end_time"]) {
+    // DO NOTHING
+  } else if (typeof(param["show_end_time"] == 'string')) {
+    strShowEndTime = new Date(param["show_end_time"]).toISOString();
+    aryUrlParam.push("sET=" + encodeURIComponent(strShowEndTime));
+  } else if (toString.call(param["show_start_time"] == '[object Date]')) {
+    strShowEndTime = param["show_end_time"].toISOString();
+    aryUrlParam.push("sET=" + encodeURIComponent(strShowEndTime));
+  } else {
+    throw new Error("show_end_time type is not string.");
+  }
+
+  if (!param["show_autorun_start"]) {
+    // DO NOTHING
+  } else if (typeof(param["show_autorun_start"] == 'string')) {
+    strShowAutorunStart = new Date(param["show_autorun_start"]).toISOString();
+    aryUrlParam.push("sAS=" + encodeURIComponent(strShowAutorunStart));
+  } else if (toString.call(param["show_autorun_start"] == '[object Date]')) {
+    strShowAutorunStart = param["show_autorun_start"].toISOString();
+    aryUrlParam.push("sAS=" + encodeURIComponent(strShowAutorunStart));
+  } else {
+    throw new Error("show_autorun_start type is not string.");
+  }
+
+  if (!param["show_autorun_end"]) {
+    // DO NOTHING
+  } else if (typeof(param["show_autorun_end"] == 'string')) {
+    strShowAutorunEnd = new Date(param["show_autorun_end"]).toISOString();
+    aryUrlParam.push("sAE=" + encodeURIComponent(strShowAutorunEnd));
+  } else if (toString.call(param["show_autorun_end"] == '[object Date]')) {
+    strShowAutorunEnd = param["show_autorun_end"].toISOString();
+    aryUrlParam.push("sAE=" + encodeURIComponent(strShowAutorunEnd));
+  } else {
+    throw new Error("show_autorun_end type is not string.");
+  }
+
+  if (!param["show_autorun"]) {
+    // DO NOTHING
+  } else if (typeof(param["show_autorun"] == 'number')) {
+    strShowAutorun = parseInt(param["show_autorun"], 10);
+    aryUrlParam.push("sA=" + encodeURIComponent(strShowAutorun));
+  } else {
+    throw new Error("show_autorun type is not string.");
+  }
+
+  if (!param["show_marker_left"]) {
+    strShowMarkerLeft = "0px";
+  } else if (typeof(param["show_marker_left"]) == 'string') {
+    if (param["show_marker_left"].match(/^\-?[0-9]+(\.[0-9]+)?px$/)) {
+      strShowMarkerLeft = param["show_marker_left"];
+      aryUrlParam.push("sML=" + encodeURIComponent(strShowMarkerLeft));
+    } else {
+      throw new Error("Format of show_marker_left is incorrect.");
+    }
+  } else {
+    throw new Error("show_marker_left type is not string.");
+  }
+
+  if (!param["show_x_scale"]) {
+    strShowXScale = "4096d";
+  } else if (typeof(param["show_x_scale"]) == 'string') {
+    if (param["show_x_scale"].match(/^[1-9][0-9]*[dmh]$/)) {
+      strShowXScale = param["show_x_scale"];
+      aryUrlParam.push("sXS=" + encodeURIComponent(strShowXScale));
+    } else {
+      throw new Error("Format of show_x_scale is incorrect.");
+    }
+  } else {
+    throw new Error("show_x_scale type is not string.");
+  }
+
+  if (!param["show_left"]) {
+    // DO NOTHING
+  } else if (typeof(param["show_left"]) == 'string') {
+    if (param["show_left"].match(/^\-?[0-9]+(\.[0-9]+)?px$/)) {
+      strShowLeft = param["show_left"];
+      aryUrlParam.push("sLe=" + encodeURIComponent(strShowLeft));
+    } else {
+      throw new Error("Format of show_left is incorrect.");
+    }
+  } else {
+    throw new Error("show_left type is not string.");
+  }
+
+  if (!param["show_time_zone"]) {
+    // DO NOTHING
+  } else if (typeof(param["show_time_zone"]) == 'string') {
+    if (param["show_time_zone"].match(/^[A-Z][a-zA-Z0-9_\-\+\/]+$/)) {
+      strShowTimeZone = param["show_time_zone"];
+      aryUrlParam.push("sTZ=" + encodeURIComponent(strShowTimeZone));
+    } else {
+      throw new Error("Format of show_time_zone is incorrect.");
+    }
+  } else {
+    throw new Error("show_time_zone type is not string.")
+  }
+
+  if (param["show_calendar_locale"] == null) {
+    // DO NOTHING
+  } else if (typeof(param["show_calendar_locale"] == 'number')) {
+    strShowCalendarLocale = parseInt(param["show_calendar_locale"], 10);
+    aryUrlParam.push("sCL=" + encodeURIComponent(strShowCalendarLocale));
+  } else {
+    throw new Error("show_calendar_locale type is not string.");
+  }
+
+  if (!param["show_list"]) {
+    throw new Error("show_list is not defined.");
+  } else {
+    var strShowList = "";
+    if (typeof param["show_list"] == "string")
+      strShowList = param["show_list"]
+    else
+      strShowList = JSON.stringify(param["show_list"]);
+
+    strShowList = strShowList.replace(/\"mission\":/g,    "m:");
+    strShowList = strShowList.replace(/,\"team\":/g,      "t:");
+    strShowList = strShowList.replace(/,\"data\":/g,      "d:");
+    strShowList = strShowList.replace(/,\"component\":/g, "c:");
+    strShowList = strShowList.replace(/},{/g,             "/" );
+  }
+
+  if (!param["env_param"]) {
+    strEnvParam = "{}";
+  } else {
+    var strEnvParam = "";
+    if (typeof param["env_param"] == "string")
+      strEnvParam = param["env_param"];
+    else
+      strEnvParam = JSON.stringify(param["env_param"]);
+
+    strEnvParam = strEnvParam.replace(/\"show\":/g,              "s:"   );
+    strEnvParam = strEnvParam.replace(/\"showYScale\":/g,        "sYS:" );
+    strEnvParam = strEnvParam.replace(/\"showYDataScale\":/g,    "sYDS:");
+    strEnvParam = strEnvParam.replace(/\"showTop\":/g,           "sT:"  );
+    strEnvParam = strEnvParam.replace(/\"showLabelColor\":/g,    "sLC:" );
+    strEnvParam = strEnvParam.replace(/\"showPlotColor\":/g,     "sPC:" );
+    strEnvParam = strEnvParam.replace(/\"showEventColor\":/g,    "sEC:" );
+    strEnvParam = strEnvParam.replace(/\"showEventBgColor\":/g,  "sEBC:");
+    strEnvParam = strEnvParam.replace(/\"showZeroAxis\":/g,      "sZA:" );
+    strEnvParam = strEnvParam.replace(/\"showEvent\":/g,         "sE:"  );
+    strEnvParam = strEnvParam.replace(/\"showChronological\":/g, "sC:"  );
+
+    strEnvParam = strEnvParam.replace(/{,/g,                     "{"    );
+    strEnvParam = strEnvParam.replace(/,}/g,                     "}"    );
+    strEnvParam = strEnvParam.replace(/\":{/g,                   "\"{"  );
+  }
+
+  aryUrlParam.push("e=" + encodeURIComponent(base64encode(zip_deflate(utf16to8(strShowList + "\/\/\/" + strEnvParam)))));
+
+  strViewURL = strViewURL + "?" + aryUrlParam.join("&");
+
+  if (strViewURL.length > 2083) throw new Error("URL length is overflow.");
+
+  return strViewURL;
+},
+/******************************************************************************/
+/** nictSTARSViewURL.parseURL                                                 */
+/******************************************************************************/
+parseURL : function(url)
+{
+  var viewURLParam = {
+    base_url             : null,
+    show_date            : null,
+    show_start_time      : null,
+    show_end_time        : null,
+    show_autorun_start   : null,
+    show_autorun_end     : null,
+    show_autorun         : null,
+    show_marker_left     : null,
+    show_x_scale         : null,
+    show_left            : null,
+    show_time_zone       : null,
+    show_calendar_locale : null,
+    show_list            : null,
+    env_param            : null,
+    others               : {}
+  }
+
+  if (url.indexOf('?') == -1)
+  {
+    viewURLParam["base_url"] = url;
+  }
+  else
+  {
+    viewURLParam["base_url"] = window.location.href.substring(0, window.location.href.indexOf("?"));
+
+    var hsParamList = url.slice(url.indexOf('?') + 1).split('&');
+    for (var i = 0; i < hsParamList.length; i++)
+    {
+      hsParam = hsParamList[i].split('=');
+      switch (hsParam[0])
+      {
+        case "sD" :
+          viewURLParam["show_date"] = new Date(decodeURIComponent(hsParam[1]));
+          break;
+        case "sST" :
+          viewURLParam["show_start_time"] = new Date(decodeURIComponent(hsParam[1]));
+          break;
+        case "sET" :
+          viewURLParam["show_end_time"] = new Date(decodeURIComponent(hsParam[1]));
+          break;
+        case "sAS" :
+          viewURLParam["show_autorun_start"] = new Date(decodeURIComponent(hsParam[1]));
+          break;
+        case "sAE" :
+          viewURLParam["show_autorun_end"] = new Date(decodeURIComponent(hsParam[1]));
+          break;
+        case "sA" :
+          var showAutorun = decodeURIComponent(hsParam[1]);
+          if (showAutorun.match(/^\-?[0-9]+$/)) viewURLParam["show_autorun"] = parseInt(showAutorun, 10); else throw "Format of sA is incorrect.";
+          break;
+        case "sMP": // old version use
+        case "sML":
+          var showMarkerLeft = decodeURIComponent(hsParam[1]);
+          if (showMarkerLeft.match(/^\-?[0-9]+(\.[0-9]+)?px$/)) viewURLParam["show_marker_left"] = showMarkerLeft; else throw "Format of sML is incorrect.";
+          break;
+        case "sXS":
+          var showXScale = decodeURIComponent(hsParam[1]);
+          if (showXScale.match(/^[1-9][0-9]*[dmh]$/)) viewURLParam["show_x_scale"] = showXScale; else throw "Format of sXS is incorrect.";
+          break;
+        case "sLe":
+          var showLeft = decodeURIComponent(hsParam[1]);
+          if (showLeft.match(/^\-?[0-9]+(\.[0-9]+)?px$/)) viewURLParam["show_left"] = showLeft; else throw "Format of sLe is incorrect.";
+          break;
+        case "sTZ":
+          var showTimeZone = decodeURIComponent(hsParam[1]);
+          if (showTimeZone.match(/^[A-Z][a-zA-Z0-9_\-\+\/]+$/)) viewURLParam["show_time_zone"] = showTimeZone; else throw "Format of sTZ is incorrect.";
+          break;
+        case "sCL" :
+          var showCalendarLocale = decodeURIComponent(hsParam[1]);
+          if (showCalendarLocale.match(/^[0-2]+$/)) viewURLParam["show_calendar_locale"] = parseInt(showCalendarLocale, 10); else throw "Format of sCL is incorrect.";
+          break;
+        case "e":
+          var strEncParam = decodeURIComponent(hsParam[1]);
+          var arrParam    = utf8to16(zip_inflate(base64decode((strEncParam)))).split("\/\/\/")
+
+          // show_date
+          var strShowList = arrParam[0];
+          strShowList     = strShowList.replace(/m:/g, "\"mission\":");
+          strShowList     = strShowList.replace(/t:/g, ",\"team\":");
+          strShowList     = strShowList.replace(/d:/g, ",\"data\":");
+          strShowList     = strShowList.replace(/c:/g, ",\"component\":");
+          strShowList     = strShowList.replace(/\//g, "},{");
+          viewURLParam["show_list"] = JSON.parse(strShowList);
+
+          // env_param
+          var strURLEnv   = arrParam[1];
+          strURLEnv       = strURLEnv.replace(/\"{/g,   "\":{");
+          strURLEnv       = strURLEnv.replace(/s:/g,    "\"show\":");
+          strURLEnv       = strURLEnv.replace(/sYS:/g,  "\"showYScale\":");
+          strURLEnv       = strURLEnv.replace(/sYDS:/g, "\"showYDataScale\":");
+          strURLEnv       = strURLEnv.replace(/sT:/g ,  "\"showTop\":");
+          strURLEnv       = strURLEnv.replace(/sLC:/g,  "\"showLabelColor\":");
+          strURLEnv       = strURLEnv.replace(/sPC:/g,  "\"showPlotColor\":");
+          strURLEnv       = strURLEnv.replace(/sEC:/g,  "\"showEventColor\":");
+          strURLEnv       = strURLEnv.replace(/sEBC:/g, "\"showEventBgColor\":");
+          strURLEnv       = strURLEnv.replace(/sZA:/g,  "\"showZeroAxis\":");
+          strURLEnv       = strURLEnv.replace(/sE:/g,   "\"showEvent\":");
+          strURLEnv       = strURLEnv.replace(/sC:/g,   "\"showChronological\":");
+          strURLEnv       = strURLEnv.replace(/sTx:/g,  "\"showChronological\":"); // old version use
+          viewURLParam["env_param"] = JSON.parse(strURLEnv);          
+          break;
+        default :
+          viewURLParam["others"][hsParam[0]] = hsParam[1];
+          break;
+      }
+    }
+    // show_date
+    
+  }
+
+  return viewURLParam;
+},
+/******************************************************************************/
+/** nictSTARSViewURL.createWindowName                                         */
+/******************************************************************************/
+createWindowName : function(label, date)
+{
+  date = date || new Date();
+
+  return label + "_" + date.getFullYear() + ("0" + (date.getMonth() + 1)).slice(-2) + ("0" + (date.getDate())).slice(-2) + ("0" + date.getHours()).slice(-2) + ("0" + date.getMinutes()).slice(-2) + ("0" + date.getSeconds()).slice(-2);
+},
+/******************************************************************************/
+/** nictSTARSViewURL.parseWindowName                                          */
+/******************************************************************************/
+parseWindowName : function(name)
+{
+  var len   = name.length;
+  var label = (len > 15) ? name.substr(0, len - 15) : "";
+  var date  = new Date(name.substr(-14,4) + "/" + name.substr(-10,2) + "/" + name.substr(-8,2) + " " + name.substr(-6,2) + ":" + name.substr(-4,2) + ":" + name.substr(-2,2));
+
+  return [label, date];
+}
+};})(jQuery);
+

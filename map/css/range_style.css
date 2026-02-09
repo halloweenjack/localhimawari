@@ -1,0 +1,258 @@
+#function-bar {
+  position: relative;
+  top:76px;
+  width: 100%;
+  height: 56px;
+  /* background: linear-gradient(to bottom, #232526 10%, #414345 90%); */
+  /* background: rgba(0,0,0,0.4); */
+  background: #333;
+  display: grid;
+  grid-template-columns: 320px 1fr 320px;
+  justify-content: space-around;
+  align-items: center;
+  font-family:Monda,sans-serif;
+  color: #fff;
+}
+
+#function-bar .left {
+  font-size: 12px;
+  padding: 0 15px;
+}
+#function-bar .center {
+  width: 100%;
+}
+#function-bar .right {
+  font-size: 12px;
+  padding: 0 15px;
+  margin: 0 0 0 auto;
+}
+
+#play_box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 420px;
+  height: 36px;
+  margin: 0 auto 0;
+  background: rgba(0,0,0,0.4);
+  border-radius: 20px;
+  transition: 0.3s;
+}
+#play_box a{
+  display: block;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+#play_box.play {
+  background: rgba(0,0,0,0.8);
+}
+
+#button_loop {
+  display: block;
+  background: url(../img/play_repeat.svg) no-repeat center center;
+  background-size: 22px 22px;
+  margin: 0 10px 0 0
+}
+
+#button_loop.loop {
+  background: url(../img/play_repeat_active.svg) no-repeat center center;
+  background-size: 22px 22px;
+  transition: 0.3s;
+}
+
+#button_back1 {
+  display: block;
+  background: url(../img/play_pause2.svg) no-repeat center center;
+  background-size: 26px 24px;
+  transform: rotate(180deg);
+}
+
+#button_back1:active {
+  opacity: 0.5;
+  transform: scale(0.9) rotate(180deg);
+}
+
+#button_back2 {
+  display: block;
+  background: url(../img/play_pause.svg) no-repeat center center;
+  background-size: 22px 22px;
+  transform: rotate(180deg);
+}
+
+#button_back2:active {
+  opacity: 0.5;
+  transform: scale(0.9) rotate(180deg);
+}
+
+#button_back3 {
+  display: block;
+  background: url(../img/play_play3.svg) no-repeat center center;
+  background-size: 24px 24px;
+  transform: rotate(180deg);
+}
+
+#button_back3:active {
+  opacity: 0.5;
+  transform: scale(0.9) rotate(180deg);
+}
+
+#button_play {
+  display: block;
+  background: url(../img/play_play.svg) no-repeat center center;
+  background-size: 24px 24px;
+  transition: 0.3s;
+}
+
+#button_play.play {
+  background: url(../img/play_play2.svg) no-repeat center center;
+  background-size: 24px 24px;
+  transition: 0.3s;
+}
+#button_fwd1 {
+  display: block;
+  background: url(../img/play_pause2.svg) no-repeat center center;
+  background-size: 24px 24px;
+}
+
+#button_fwd1:active {
+  opacity: 0.5;
+  transform: scale(0.9);
+}
+#button_fwd2 {
+  display: block;
+  background: url(../img/play_pause.svg) no-repeat center center;
+  background-size: 22px 22px;
+}
+
+#button_fwd2:active {
+  opacity: 0.5;
+  transform: scale(0.9);
+}
+
+#button_fwd3 {
+  display: block;
+  background: url(../img/play_play3.svg) no-repeat center center;
+  background-size: 24px 24px;
+}
+
+#button_fwd3:active {
+  opacity: 0.5;
+  transform: scale(0.9);
+}
+
+#button_rec {
+  display: block;
+  background: url(../img/play_rec.svg) no-repeat center center;
+  background-size: 22px 22px;
+  margin: 0 0 0 10px
+}
+
+#button_rec.rec {
+  background: url(../img/play_rec_active.svg) no-repeat center center;
+  background-size: 22px 22px;
+  transition: 0.3s;
+}
+
+
+
+#button_select_data {
+  background: url(../img/ic_folder.svg) no-repeat center left;
+  background-size: 20px 20px;
+  padding: 0 0 0 24px;
+  margin: 0 1em 0 0;
+  cursor: pointer;
+  transition: 0.3s;
+}
+#button_select_data:hover {
+  color: #999
+}
+
+#button_view_url {
+  background: url(../img/ic_link.svg) no-repeat center left;
+  background-size: 20px 20px;
+  padding: 0 0 0 24px;
+  margin: 0 1em 0 0;
+  cursor: pointer;
+}
+#button_view_url:hover {
+  color: #999
+}
+
+#button_autorun {
+  background: url(../img/ic_play.svg) no-repeat center left;
+  background-size: 20px 20px;
+  padding: 0 0 0 24px;
+  margin: 0 1em 0 0;
+  cursor: pointer;
+  transition: 0.3s;
+}
+#button_autorun:hover {
+  color: #999
+}
+
+#button_help {
+  background: url(../img/ic_help.svg) no-repeat center left;
+  background-size: 20px 20px;
+  padding: 0 0 0 24px;
+  margin: 0 1em 0 0;
+  cursor: pointer;
+  transition: 0.3s;
+}
+#button_help:hover {
+  color: #999
+}
+
+#slider {
+  width: 180px;
+  height: 50px;
+  display: grid;
+  grid-template-columns: 20px 1fr 20px;
+  align-items: center;
+  box-sizing: border-box;
+  grid-column-gap: 10px
+}
+#button_plus{
+  width: 24px;
+  height: 24px;
+  background: url(../img/ic_plus.svg) no-repeat center center;
+  background-size: 20px 20px;
+  cursor: pointer;
+}
+#button_plus:active{
+  opacity: 0.5;
+  transform: scale(0.9);
+}
+
+#button_minus{
+  width: 24px;
+  height: 24px;
+  background: url(../img/ic_minus.svg) no-repeat center center;
+  background-size: 20px 20px;
+  cursor: pointer;
+}
+
+#button_minus:active{
+  opacity: 0.5;
+  transform: scale(0.9);
+}
+
+#play_button {
+  background : url(../img/play_play.svg) 50% 50% no-repeat;
+  background-size : 24px 24px;
+  -webkit-background-size : 24px 24px;
+  position : fixed;
+  bottom : 130px;
+  right : 300px;
+  width : 50px;
+  height : 50px;
+  cursor : pointer;
+  z-index : 9999;
+}
+
+#play_button.play {
+  background: url(../img/play_play2.svg) no-repeat center center;
+  background-size: 24px 24px;
+  transition: 0.3s;
+}
+

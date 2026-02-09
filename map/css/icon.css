@@ -1,0 +1,328 @@
+#amedas .dctrl_name, #side-menu #amedas .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_rain.svg);
+  background-size: 20px 20px;
+}
+#amedas .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_rain_off.svg);
+  background-size: 20px 20px;
+}
+#amjp_point .dctrl_name, #side-menu #amjp_point .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_sun.svg);
+  background-size: 20px 20px;
+}
+#amjp_point .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_sun_off.svg);
+  background-size: 20px 20px;
+}
+#nusdas_msm .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_sun.svg);
+  background-size: 20px 20px;
+}
+#nusdas_msm .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_sun_off.svg);
+  background-size: 20px 20px;
+}
+#amjp .dctrl_name, #side-menu #amjp .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_sun.svg);
+  background-size: 20px 20px;
+}
+#amjp .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_sun_off.svg);
+  background-size: 20px 20px;
+}
+#amjp_temp .dctrl_name, #side-menu #amjp_temp .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_temp.svg);
+  background-size: 20px 20px;
+}
+#amjp_temp .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_temp_off.svg);
+  background-size: 20px 20px;
+}
+#amjp_humidity .dctrl_name, #side-menu #amjp_humidity .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_humidity.svg);
+  background-size: 20px 20px;
+}
+#amjp_humidity .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_humidity_off.svg);
+  background-size: 20px 20px;
+}
+#amjp_wnd .dctrl_name, #side-menu #amjp_wnd .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_wnd.svg);
+  background-size: 20px 20px;
+}
+#amjp_wnd .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_wnd_off.svg);
+  background-size: 20px 20px;
+}
+/*
+#amjp_wndmznl .dctrl_name, #side-menu #amjp_wndmznl .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_wnd.svg);
+  background-size: 20px 20px;
+}
+#amjp_wndmznl .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_wnd_off.svg);
+  background-size: 20px 20px;
+}
+#amjp_wndspd .dctrl_name, #side-menu #amjp_wndspd .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_wnd.svg);
+  background-size: 20px 20px;
+}
+#amjp_wndspd .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_wnd_off.svg);
+  background-size: 20px 20px;
+}
+*/
+#amjp_pvp .dctrl_name, #side-menu #amjp_pvp .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_pvp.svg);
+  background-size: 20px 20px;
+}
+#amjp_pvp .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_pvp_off.svg);
+  background-size: 20px 20px;
+}
+#amjp_noct .dctrl_name, #side-menu #amjp_noct .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_noct.svg);
+  background-size: 20px 20px;
+}
+#amjp_noct .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_noct_off.svg);
+  background-size: 20px 20px;
+}
+
+#radar .dctrl_name, #side-menu #radar .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_raider.svg);
+  background-size: 20px 18px;
+}
+#radar .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_raider_off.svg);
+  background-size: 20px 18px;
+}
+#elst .dctrl_name, #side-menu #elst .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_thunder.svg);
+  background-size: 20px 20px;
+}
+#elst .dctrl_name.off {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_thunder_off.svg);
+  background-size: 20px 20px;
+}
+#wwarn .dctrl_name, #side-menu #wwarn .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_caution.svg);
+  background-size: 18px 18px;
+}
+#wwarn .dctrl_name.off {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_caution_off.svg);
+  background-size: 18px 18px;
+}
+#h8jp .dctrl_name, #side-menu #h8jp .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_himawari.svg);
+  background-size: 18px 18px;
+}
+#h8jp .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_himawari_off.svg);
+  background-size: 18px 18px;
+}
+#h8jp_b13 .dctrl_name, #side-menu #h8jp_b13 .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_himawari.svg);
+  background-size: 18px 18px;
+}
+#h8jp_b13 .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_himawari_off.svg);
+  background-size: 18px 18px;
+}
+#wni .dctrl_name, #side-menu #wni .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_raider.svg);
+  background-size: 18px 18px;
+}
+#wni .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_raider_off.svg);
+  background-size: 18px 18px;
+}
+#tile_info .dctrl_name, #side-menu #tile_info .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_tile.svg);
+  background-size: 16px 16px;
+}
+#tile_info .dctrl_name.off{
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_tile_off.svg);
+  background-size: 16px 16px;
+}
+#dam_map .dctrl_name, #side-menu #dam_map .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_river.svg);
+  background-size: 16px 16px;
+}
+#dam_map .dctrl_name.off {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_river_off.svg);
+  background-size: 16px 16px;
+}
+#red_map .dctrl_name, #side-menu #red_map .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_sekisyoku.svg);
+  background-size: 16px 16px;
+}
+#red_map .dctrl_name.off {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_sekisyoku_off.svg);
+  background-size: 16px 16px;
+}
+
+#mobile-menu #data_select_box #amjp {
+  background-image : url(../img/icon_sun.svg);
+  background-size : 20px 20px;
+}
+#mobile-menu #data_select_box #amjp_temp {
+  background-image : url(../img/icon_temp.svg);
+  background-size : 20px 20px;
+}
+#mobile-menu #data_select_box #amjp_humidity {
+  background-image : url(../img/icon_humidity.svg);
+  background-size : 20px 20px;
+}
+#mobile-menu #data_select_box #amjp_wnd {
+  background-image : url(../img/icon_wnd.svg);
+  background-size : 20px 20px;
+}
+/*
+#mobile-menu #data_select_box #amjp_wndmznl {
+  background-image : url(../img/icon_wnd.svg);
+  background-size : 20px 20px;
+}
+#mobile-menu #data_select_box #amjp_wndspd {
+  background-image : url(../img/icon_wnd.svg);
+  background-size : 20px 20px;
+}
+*/
+#mobile-menu #data_select_box #amjp_pvp {
+  background-image : url(../img/icon_pvp.svg);
+  background-size : 20px 20px;
+}
+#mobile-menu #data_select_box #amjp_noct {
+  background-image : url(../img/icon_noct.svg);
+  background-size : 20px 20px;
+}
+#mobile-menu #data_select_box #h8jp {
+  background-image : url(../img/icon_himawari.svg);
+  background-size : 18px 18px;
+}
+#mobile-menu #data_select_box #wni {
+  background-image : url(../img/icon_raider.svg);
+  background-size : 18px 18px;
+}
+#mobile-menu #data_select_box #wwarn {
+  background-image : url(../img/icon_caution.svg);
+  background-size : 18px 18px;
+}
+header #mobile-menu #data_select_box > label#amjp.data.out{
+  background-image : url(../img/icon_sun_off.svg);
+}
+header #mobile-menu #data_select_box > label#amjp_temp.data.out{
+  background-image : url(../img/icon_sun_off.svg);
+}
+header #mobile-menu #data_select_box > label#amjp_humidity.data.out{
+  background-image : url(../img/icon_sun_off.svg);
+}
+header #mobile-menu #data_select_box > label#amjp_wnd.data.out{
+  background-image : url(../img/icon_sun_off.svg);
+}
+/*
+header #mobile-menu #data_select_box > label#amjp_wndmznl.data.out{
+  background-image : url(../img/icon_sun_off.svg);
+}
+header #mobile-menu #data_select_box > label#amjp_wndspd.data.out{
+  background-image : url(../img/icon_sun_off.svg);
+}
+*/
+header #mobile-menu #data_select_box > label#amjp_pvp.data.out{
+  background-image : url(../img/icon_sun_off.svg);
+}
+header #mobile-menu #data_select_box > label#amjp_noct.data.out{
+  background-image : url(../img/icon_sun_off.svg);
+}
+header #mobile-menu #data_select_box > label#h8jp.data.out{
+  background-image : url(../img/icon_himawari_off.svg);
+}
+header #mobile-menu #data_select_box > label#wni.data.out{
+  background-image : url(../img/icon_raider_off.svg);
+}
+header #mobile-menu #data_select_box > label#wwarn.data.out{
+  background-image : url(../img/icon_caution_off.svg);
+}
+
+#mobile-menu #data_slider_box .slider[data-name="amjp"] {
+  background-image : url(../img/icon_sun.svg);
+  background-size : 22px 22px;
+}
+#mobile-menu #data_slider_box .slider[data-name="amjp_temp"] {
+  background-image : url(../img/icon_temp.svg);
+  background-size : 22px 22px;
+}
+#mobile-menu #data_slider_box .slider[data-name="amjp_humidity"] {
+  background-image : url(../img/icon_humidity.svg);
+  background-size : 22px 22px;
+}
+#mobile-menu #data_slider_box .slider[data-name="amjp_wnd"] {
+  background-image : url(../img/icon_wnd.svg);
+  background-size : 22px 22px;
+}
+/*
+#mobile-menu #data_slider_box .slider[data-name="amjp_wndmznl"] {
+  background-image : url(../img/icon_wnd.svg);
+  background-size : 22px 22px;
+}
+#mobile-menu #data_slider_box .slider[data-name="amjp_wndspd"] {
+  background-image : url(../img/icon_wnd.svg);
+  background-size : 22px 22px;
+}
+*/
+#mobile-menu #data_slider_box .slider[data-name="amjp_pvp"] {
+  background-image : url(../img/icon_pvp.svg);
+  background-size : 22px 22px;
+}
+#mobile-menu #data_slider_box .slider[data-name="amjp_noct"] {
+  background-image : url(../img/icon_noct.svg);
+  background-size : 22px 22px;
+}
+#mobile-menu #data_slider_box .slider[data-name="h8jp"] {
+  background-image : url(../img/icon_himawari.svg);
+  background-size : 22px 22px;
+}
+#mobile-menu #data_slider_box .slider[data-name="wni"] {
+  background-image : url(../img/icon_raider.svg);
+  background-size : 22px 22px;
+}

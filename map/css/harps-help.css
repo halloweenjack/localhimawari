@@ -1,0 +1,169 @@
+html {
+  overflow : auto!important;
+}
+body {
+  position : static;
+  overflow : auto!important;
+  background : #333;
+}
+.header_subtitle {
+  top : 50px;
+  z-index : 999;
+}
+
+header .subtitle {
+  color : #fff;
+  margin-top: 10px;
+  font-size: 18px;
+  text-align: center;
+}
+
+header .subtitle[data_id='help'] .icon{
+  background-image : url(../img/icon_help_2.svg);
+}
+
+header .subtitle .icon {
+  display : inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  -webkit-background-size: 16px 16px;
+  vertical-align: -1px;
+}
+
+#help {
+  width : 100%;
+  max-width : 980px;
+  margin : 10px auto 0;
+  position : relative;
+  z-index : 9996;
+}
+
+#help h2 {
+  text-align : left;
+  color : #111;
+  padding : 15px 15px 0 15px;
+  font-size : 18px;
+}
+
+#help h3 {
+  text-align : left;
+  color : #333;
+  padding : 10px 15px 0 25px;
+  font-size : 16px;
+}
+#help h3.sub, #help .list.sub {
+  margin-left: 20px;
+}
+
+#help i {
+  padding-right : 10px;
+}
+#help i.mobile, #help i.browser {
+  padding-left : 5px;
+  padding-right : 15px;
+}
+
+#help p {
+  font-size : 15px;
+  color : #666;
+  padding : 15px;
+}
+#help p.list {
+  padding : 5px 15px 15px 25px;
+}
+
+#help ul {
+  font-size : 14px;
+  color : #888;
+  padding : 15px 15px 15px 25px;
+}
+
+#help li a {
+  display : block;
+  margin-bottom : 10px;
+  color : rgb(3, 155, 229);
+}
+
+#help span{
+  font-size : 12px;
+}
+
+#help .number {
+  padding : 4px 8px;
+  margin-right : 6px;
+  color : white;
+  background : #03a9f4;
+}
+#help .number2 {
+  padding : 4px 8px;
+  margin-right : 6px;
+  color : white;
+  background : #ffc000;
+}
+
+#help img {
+  display: block;
+  width: 92%;
+  text-align: center;
+  margin: 0 auto 0;
+}
+
+#help img.explain {
+  display : inline;
+  width : 30px;
+  height : 30px;
+  background : #000;
+  text-align : left;
+  margin : 0;
+}
+#help img.explain2 {
+  position: absolute;
+  display: inline;
+  width: 30px;
+  height: 30px;
+  text-align: left;
+  margin: 0 0 0 -30px;
+}
+#help img.select_icon {
+  display : inline;
+  width : 10px;
+  height : 10px;
+  background-color : #0277BD;
+  padding : 5px;
+  margin : 0;
+  margin-right : 3px;
+}
+
+.box_odd {
+  position : relative;
+  z-index : 9999;
+  background : #fafafa;
+}
+.box_even {
+  position : relative;
+  z-index : 9999;
+  background : #eee;
+}
+
+.copy {
+  color : #888;
+  font-size : 11px;
+  text-align : center;
+  padding : 20px 0 20px 0;
+}
+
+.capture {
+  width : 90%;
+  text-align : center;
+  background-color : white;
+  margin : 0 auto;
+}
+.capture2 {
+  width : 35%;
+  text-align : center;
+  background-color : white;
+  margin-left: 50px;
+}

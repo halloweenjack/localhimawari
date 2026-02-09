@@ -1,0 +1,1956 @@
+$(window).on("load", function () {
+  window.isReady = function(){
+    console.log("window.isReady");
+    return window.document.readyState == "complete" && window.$ && window.$.harpsModel;
+  }
+
+  window.getMap = function(){
+    return $.harpsModel.map;
+  }
+
+  window.setPosition = function(pPosition){
+    console.log("harps-view setPosition", pPosition);
+    if(!$.harpsModel.map || $.harpsModel.map == undefined) {
+      return;
+    }
+    $.harpsModel.map.setCenter([pPosition.center.lng, pPosition.center.lat]);
+    $.harpsModel.map.setZoom(pPosition.zoom);
+    $.harpsModel.map.setPitch(pPosition.pitch);
+    $.harpsModel.map.setBearing(pPosition.direction);
+  }
+
+  window.updateDate = function(pDate){
+    /*
+     let ct = new Date(Math.floor(pDate.currentTime / 3600000) * 3600000);
+     var formatDate = String(ct.getFullYear()).padStart(4, '0') + String(ct.getMonth() + 1).padStart(2, '0') + String(ct.getDate()).padStart(2, '0');
+     var formatTime = String(ct.getHours()).padStart(2, '0') + String(ct.getMinutes()).padStart(2, '0');
+     console.log("updateDate " + formatDate + " " + formatTime);
+     updateLayers(formatDate + formatTime);
+    */
+    $.harpsModel.time.update(pDate.currentTime);
+  }
+
+  window.getLatestDate = function() {
+    return $.harpsModel.time.end;
+  }
+
+  window.initTimeline = function() {
+    //console.log("window.initTimeline", $.harpsModel.time);
+    var pDate = {};
+    var cDate = $.harpsModel.time.now;
+    pDate.currentDate = cDate;
+    pDate.startDate   = new Date(cDate.getFullYear(), cDate.getMonth(), cDate.getDate(),   0,  0,  0);
+    pDate.endDate     = new Date(cDate.getFullYear(), cDate.getMonth(), cDate.getDate(),  23, 59, 59);
+    if(window.parent) {
+      console.log("window.initTimeline parent.STARScontroller_setDate", pDate);
+      console.log("window.initTimeline parent.STARScontroller_setDate", window.parent.document.readyState);
+      /*
+      let observer = setInterval(function(){
+        if (window.parent.document.readyState == "complete") {
+          window.parent.STARScontroller_setDate(pDate);
+          crearInterval(observer);
+        }
+      }, 500);
+      */
+      window.parent.STARScontroller_setDate(pDate);
+    }
+  }
+
+  window.getViewURL = function(){
+    var url = $.harpsModel.viewurl.getParamURL();
+    return "&" + url;
+  }
+
+  //window.setViewURL = function(viewUrl){  }
+
+  /**
+   * HARPS View
+   * @require jquery
+   */
+  /**
+   * 時間の表示フォーマット
+   */
+  const TIME_FORMAT = "%Y/%m/%d %H:%M:%S";
+
+  /**
+   * データ選択解除/透明度変更のマウスカーソルが動いたと判断する閾値(px)
+   */
+  const DCTRL_SELECT_THRESHOULD = 10;
+
+  /**
+   * データ選択ボタンのクリック間隔の閾値(ms) */
+  const DCTRL_CLICK_INTERVAL = 500;
+
+  /**
+   * 地図色の指定
+   */
+  const MCOLOR_DARK = 0;
+  const MCOLOR_WHITE = 1;
+
+  var init_flag = false;
+  var data_type = "amjp";
+  var infowindow;
+
+  var getDataType = function () {
+    data_type;
+  };
+
+  /**
+   * Mapの初期化処理
+   */
+  var _initMap = function () {
+    // 一時的に地図種選択を非表示にする
+    $('#map_select_box').hide();
+
+    $.harpsModel.map.on("click", function (event) {
+        //console.log("harpsModel.map.on click in");
+    });
+
+    // アメダス拠点 矩形選択 start
+    /*------------- mousedown -------------*/
+    $.harpsModel.map.on("mousedown", function (event) {
+      if ( ($("#data_select_box #amedas").hasClass("on") && event.originalEvent.button == 2) 
+           || ($("#data_select_box #amjp_point").hasClass("on") && event.originalEvent.button == 2) ){
+
+        // マップのドラッグ移動・ロール操作の無効化
+        $.harpsModel.map.dragRotate.disable();
+        $.harpsModel.map.dragPan.disable();
+
+        $("#map").addClass("mapboxgl-crosshair");
+
+        var isCreatedSelectBox = false;
+        var isSelectBox        = false;
+
+        // 矩形選択用の要素生成
+        if (!isCreatedSelectBox && !isSelectBox) {
+          const selectionBox = document.createElement("div");
+          var startX         = event.originalEvent.clientX;
+          var startY         = event.originalEvent.clientY;
+
+          isCreatedSelectBox = true;
+          isSelectBox        = true;
+          selectionBox.id    = "selection-box";
+
+          // マップの要素内に矩形選択の要素追加
+          if (selectionBox) {
+            $("#selection-box").css({"transform": "translate(" + startX + "px," + startY + "px)", "width": "0px", "height": "0px"});
+            $("#map").append(selectionBox);
+          } else return;
+        }
+        /*------------- mousemove -------------*/
+        // 矩形選択範囲の変更
+        var fncMove = function(event) {
+          const initialMouseX = event.clientX;
+          const initialMouseY = event.clientY;
+          var newWidth, newHeight, newMouseX, newMouseY;
+      
+          newWidth  = Math.abs(initialMouseX - startX);
+          newHeight = Math.abs(initialMouseY - startY);
+          newMouseX = initialMouseX >= startX ? startX : initialMouseX;
+          newMouseY = initialMouseY >= startY ? startY : initialMouseY;
+
+          if ($("#selection-box")) {
+            $("#selection-box").css({"transform": "translate(" + newMouseX + "px," + newMouseY + "px)", "width": newWidth  + "px", "height": newHeight + "px"});
+          }
+        }
+        document.addEventListener("mousemove", fncMove, { passive: false }); 
+        /*------------- mouseup -------------*/
+        $("#selection-box").on("mouseup", function (event) {
+          $("#selection-box").on("contextmenu", function () { return false; });
+          document .removeEventListener( "mousemove", fncMove, { passive: false });
+
+          // amCharts用URL生成
+          if ($("#data_select_box #amedas").hasClass("on") && event.originalEvent.button == 2) {
+            $.harpsModelLocalHIMAWARI.amedas.createSelectAmedasUrl();
+          }
+
+          if ($("#data_select_box #amjp_point").hasClass("on") && event.originalEvent.button == 2) {
+            $.harpsModelLocalHIMAWARI.amjpPoint.createSelectAmaterassUrl();
+          }
+
+          $("#map").removeClass("mapboxgl-crosshair");
+          // マップのドラッグ移動・ロール操作の有効化
+          $.harpsModel.map.dragPan.enable();
+          $.harpsModel.map.dragRotate.enable();
+        });
+      }
+    });
+    // アメダス拠点 矩形選択 end
+    $.harpsModel.map.on("moveend", function () {
+        console.log("moveend");
+        $.harpsModel.tiles.chkLatLngTiles();
+        console.log("moveend - chkLatLng");
+        $.harpsModel.viewurl.save();
+        console.log("moveend - viewurl");
+    });
+
+    // 自動実行時は停止させる
+    $.harpsModel.map.on("mousedown", function () {
+	//$.harpsModel.autoRun.stop();
+
+        $("#submenu_area").trigger("close_submenu");
+        $("body").removeClass("autorun");
+        $('#play_box').removeClass('play');
+        $('#button_play').removeClass('play');
+        $("body").removeClass("running");
+    });
+
+    // MIERUNE : TODO
+    $.harpsModel.map.on("bounds_changed", function () {
+      console.log("MIERUNE TODO: map on bounds_changed");
+      $.harpsModel.tiles.chkLatLngTiles();
+      $.harpsModel.viewurl.save();
+    });
+
+    $.harpsModel.map.on("contextmenu", function (event) {
+      //if(infowindow) infowindow.close();
+
+      lat = event.lngLat.lat;
+      lng = event.lngLat.lng;
+      console.log("contextmenu lat = " + lat + "  lng = " + lng);
+
+      var year = $.harpsModel.time.now.getFullYear();
+      var month = $.harpsModel.time.now.getMonth() + 1;
+      var date = $.harpsModel.time.now.getDate();
+      var url = "https://veda01.cr.chiba-u.jp/views/cgi_1_1.py?ctype=2";
+      url += "&lat=" + lat + "&lng=" + lng;
+      url += "&year_1=" + year + "&month_1=" + month + "&day_1=" + date;
+      url += "&year_2=" + year + "&month_2=" + month + "&day_2=" + date;
+      url += "&variable=dwn.sw.flx.sfc&type=msm";
+
+      var day1weekago = new Date($.harpsModel.time.now);
+      day1weekago.setDate(day1weekago.getDate() - 7);
+      var year1weekago = day1weekago.getFullYear();
+      var month1weekago = day1weekago.getMonth() + 1;
+      var date1weekago = day1weekago.getDate();
+      var url1weekago = "https://veda01.cr.chiba-u.jp/views/cgi_1_1.py?ctype=2";
+      url1weekago += "&lat=" + lat + "&lng=" + lng;
+      url1weekago += "&year_1=" + year1weekago + "&month_1=" + month1weekago + "&day_1=" + date1weekago;
+      url1weekago += "&year_2=" + year + "&month_2=" + month + "&day_2=" + date;
+      url1weekago += "&variable=dwn.sw.flx.sfc&type=msm";
+
+      var day3daysago = new Date($.harpsModel.time.now);
+      day3daysago.setDate(day3daysago.getDate() - 3);
+      var year3daysago = day3daysago.getFullYear();
+      var month3daysago = day3daysago.getMonth() + 1;
+      var date3daysago = day3daysago.getDate();
+      var url3daysago = "https://veda01.cr.chiba-u.jp/views/cgi_1_1.py?ctype=2";
+      url3daysago += "&lat=" + lat + "&lng=" + lng;
+      url3daysago += "&year_1=" + year3daysago + "&month_1=" + month3daysago + "&day_1=" + date3daysago;
+      url3daysago += "&year_2=" + year + "&month_2=" + month + "&day_2=" + date;
+      url3daysago += "&variable=dwn.sw.flx.sfc&type=msm";
+
+      // 勝様グラフアプリ
+      var urlpower = "https://www.hjcg.net/chart/amaterass2/?lat=" + lat + "&lng=" + lng + "&year=" + year + "&month=" + month + "&date=" + date;
+
+      if (infowindow){
+        infowindow.close();
+      }
+      /*
+      GeoCoding(lat, lng, function (address) {
+        if (address != null) {
+          var contentStr = "<p><br>" + address + "<br> lat=" + lat.toFixed(3) + ", lng=" + lng.toFixed(3) + "";
+          contentStr += "<br><br><a href=" + url1weekago + ' target="_blank">表示日から過去1週間分のデータを表示</a>';
+          contentStr += "<br><br><a href=" + url3daysago + ' target="_blank">表示日から過去3日分のデータを表示</a>';
+          contentStr += "<br><br><a href=" + url + ' target="_blank">表示日当日分のデータを表示</a>';
+          contentStr += "<br><br><a href=" + urlpower + ' target="_blank">選択地域の太陽光発電出力を表示</a><br></p>';
+          //console.log("contentStr = " + contentStr);
+          //var popup = L.popup().setLatLng(event.latlng).setContent(contentStr);
+          //popup.openOn($.harpsModel.map);
+        }
+      });
+      */
+    });
+
+    if ($.harpsModel.util.isMobileWindow()) {
+      // モバイルでは地図を動かした場合はメニュー,サブメニューを閉じる
+      // コメントアウト 2019.02.20 dol-add
+      // google.maps.event.addListener($.harpsModel.map, "mousedown", function(){
+      //   $("#mobile-menu").trigger("close");
+      //   $("#submenu_area").trigger("close_submenu");
+      // });
+      // コメントアウト 2019.02.20 dol-end
+      // 2019.02.21 dol-add
+      $.harpsModel.map.on("mousedown", function () {
+        $("#mobile-menu").trigger("close");
+        $("#submenu_area").trigger("close_submenu");
+      });
+      // 2019.02.21 dol-end
+    }
+
+    var searchInput = $('#pac-input');
+    searchInput.keypress(function(e) {
+      console.log("aaaaa");
+      if (e.which == 13 && searchInput.val()) {
+        console.log(searchInput.val());
+        $.ajax({
+          async: false,
+          type: "GET",
+          url: "https://msearch.gsi.go.jp/address-search/AddressSearch?q=" + searchInput.val(),
+          dataType: "json",
+        }).done(function (pJsonArray) {
+          console.log("住所検索", pJsonArray);
+          if (pJsonArray.length > 0) {
+            console.log("住所検索 pin", pJsonArray[0]);
+            let lng = pJsonArray[0].geometry.coordinates[0];
+            let lat = pJsonArray[0].geometry.coordinates[1];
+
+            const el = document.createElement('div');
+            el.className = 'searchMarker';
+
+            console.log("住所検索 pin lnglat", pJsonArray[0].geometry.coordinates);
+            console.log("住所検索 pin address", pJsonArray[0].properties.title);
+
+            if ($.harpsModel.map.searchMarker) {
+              $.harpsModel.map.searchMarker.remove();
+            }
+
+            $.harpsModel.map.searchMarker = new mapboxgl.Marker(el);
+            $.harpsModel.map.searchMarker.setLngLat(new mapboxgl.LngLat(lng, lat))
+                .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<h3>${pJsonArray[0].properties.title}</h3>`))
+                .addTo($.harpsModel.map);
+            $.harpsModel.map.flyTo({center: [lng, lat], essential: true});
+          }
+        }).fail(function (pXMLHttpRequest, pTextStatus, pErrorThrown) {
+            console.log(pXMLHttpRequest);
+            console.log(pTextStatus);
+            console.log(pErrorThrown);
+        });
+        // 自動submitの抑制
+        return false;
+      }
+    });
+
+    let currentLayers = $.harpsModel.map.getStyle().layers;
+    let labelLayerId = currentLayers.find(
+        (layer) => layer.type === 'symbol' && layer.layout['text-field']
+    ).id;
+    $.harpsModel.map.addLayer({
+        id: "add-3d-buildings",
+        source: "composite",
+        "source-layer": "building",
+        filter: ["==", "extrude", "true"],
+        type: "fill-extrusion",
+        minzoom: 15,
+        paint: {
+            "fill-extrusion-color": "#aaa",
+            "fill-extrusion-height": [
+                "interpolate", ["linear"], ["zoom"], 15, 0, 15.05, ["get", "height"],
+            ],
+            "fill-extrusion-base": [
+                "interpolate", ["linear"], ["zoom"], 15, 0, 15.05, ["get", "min_height"],
+            ],
+            "fill-extrusion-opacity": 0.6,
+        },
+    }, labelLayerId);
+
+/*
+    searchInput.addListener('places_changed', function() {
+    var places = searchBox.getPlaces();
+
+    if (places.length == 0) {
+      return;
+    }
+    var bounds = new google.maps.LatLngBounds();
+      places.forEach(function(place) {
+        if (!place.geometry) {
+          console.log("Returned place contains no geometry");
+          return;
+        }
+
+        var geocoder = new google.maps.Geocoder();
+        var marker;
+
+        // geocoder.geocode()メソッドを実行
+        geocoder.geocode( { 'address': place.formatted_address}, function(results, status) {
+          // ジオコーディングが成功した場合
+          if (status == google.maps.GeocoderStatus.OK) {
+            marker = new google.maps.Marker({
+              map: $.harpsModel.map,
+              position: results[0].geometry.location
+            });
+          // ジオコーディングが成功しなかった場合
+          } else {
+            console.log('Geocode was not successful for the following reason: ' + status);
+          }
+        });
+
+        if (place.geometry.viewport) {
+          bounds.union(place.geometry.viewport);
+        } else {
+          bounds.extend(place.geometry.location);
+        }
+      });
+      $.harpsModel.map.fitBounds(bounds);
+    });
+    var input = document.getElementById("pac-input");
+
+    // 住所検索フォームサブミット直前イベント定義
+    $("#pac-form").submit(function (e) {
+      var keyword = $("#pac-input").val();
+      L.esri.Geocoding.geocode().text(keyword).run(function (err, results, response) {
+        // マーカーグループを生成
+        var markers = L.featureGroup();
+        // マーカーをグループに追加
+        $.each(results["results"], function (i, val) {
+          markers.addLayer(L.marker([val["latlng"]["lat"], val["latlng"]["lng"]]));
+        });
+        // マーカーを地図上に表示
+        markers.addTo($.harpsModel.map);
+        // グループが全て収まる座標とズームで表示
+        $.harpsModel.map.fitBounds(markers.getBounds());
+      });
+      // サブミットキャンセル
+   
+      return false;
+    });
+*/
+  };
+
+  /**
+   * メニューボタンの初期化
+   */
+  var _initMenuBtn = function () {
+    // メニューの表示切替
+    if ($.harpsModel.util.isMobileWindow() == true) {
+      _initMobileMenu();
+    } else {
+      _initPCMenu();
+    }
+
+    $("#submenu_area").on({
+      toggle_submenu: function () {
+        $(this).toggleClass("visible");
+        $("header .title .submenu_button").toggleClass("visible");
+      },
+      open_submenu: function () {
+        $(this).addClass("visible");
+        $("header .title .submenu_button").addClass("visible");
+      },
+      close_submenu: function () {
+        $(this).removeClass("visible");
+        $("header .title .submenu_button").removeClass("visible");
+      },
+    });
+    $("header .title .submenu_button").on("click", function () {
+      $(this).parents("header").find("#submenu_area").trigger("toggle_submenu");
+    });
+  };
+  var _initPCMenu = function () {
+    $("header.mobile").remove();
+    $("header.pc").css("display", "block");
+
+    $(".side-menu").on({
+      open_quick: function () {
+        $("header .title .menu_button").toggleClass("open", true);
+        $(this).toggleClass("open", true);
+      },
+      close_quick: function () {
+        $(".sub-range").trigger("close_sub");
+        $("header .title .menu_button").toggleClass("open", false);
+        $(this).toggleClass("open", false);
+      },
+      open: function () {
+        $(this).animate({ left: "0px" }, "swing");
+        $("header .title .menu_button").toggleClass("open", true);
+        $(this).toggleClass("open", true);
+      },
+      close: function () {
+        $(this).animate(
+          { left: "-=" + $(this).width() + "px" },
+          200,
+          "swing",
+          function () {
+            $(".sub-range").trigger("close_sub");
+            $("header .title .menu_button").toggleClass("open", false);
+            $(this).toggleClass("open", false);
+          }
+        );
+      },
+    });
+
+    $("header .title .menu_button").on("click", function () {
+      $(".side-menu").trigger("open");
+      $.harpsModel.viewurl.save();
+    });
+    $("#close-btn").on("click", function () {
+      $(".side-menu").trigger("close");
+      setTimeout(function () {
+        $.harpsModel.viewurl.save();
+      }, 250);
+    });
+
+    // 初期表示時にメニューを開いた状態にする
+    $(".pc .side-menu").trigger("open_quick");
+  };
+  var _initMobileMenu = function () {
+    $("header.pc").remove();
+    $("header.mobile").css("display", "block");
+    //$("#time_controller").addClass("mobile");
+    //$("#autorun_panel").addClass("mobile");
+
+    $("#mobile-menu").on({
+      open_quick: function () {
+        $("header.mobile .title .left").addClass("open");
+        $(this).addClass("open");
+        $("#submenu_area").trigger("close_submenu");
+        $("#slider").trigger("open");
+      },
+      close_quick: function () {
+        $("header.mobile .title .left").removeClass("open");
+        $(this).removeClass("open");
+        $("#slider").trigger("close");
+      },
+      open: function () {
+        $("header.mobile .title .left").addClass("open");
+        $(this).addClass("open");
+        $("#submenu_area").trigger("close_submenu");
+        $("#slider").trigger("open");
+      },
+      close: function () {
+        $("header.mobile .title .left").removeClass("open");
+        $(this).removeClass("open");
+        $("#slider").trigger("close");
+      },
+    });
+    $("header.mobile .title .left").on({
+      click: function () {
+        if ($(this).hasClass("open")) {
+          $("#mobile-menu").trigger("close");
+        } else {
+          $("#mobile-menu").trigger("open");
+        }
+        $.harpsModel.viewurl.save();
+      },
+    });
+    // モバイルでの時刻スライダー
+    _initMobileSlider();
+  };
+
+  // スマホ用スライダーの初期化
+  var _initMobileSlider = function () {
+    var min = 0;
+    var max = 1439; // 1日のステップ数, 60分x24時間
+    var sTimeVal = _getDayMinute($.harpsModel.time.now);
+    var $slider = $(
+      '<section id="slider"><div id="time_display"><p>00:00</p><p>12:00</p><p>24:00</p></div><div id="time_slider"><input type="range" min="' +
+        min +
+        '" max="' +
+        max +
+        '" value="' +
+        sTimeVal +
+        '" step="1" data-rangeslider><output></output></div></section>'
+    );
+    $slider.appendTo("body");
+    $("#slider input[type=range]").rangeslider({
+      polyfill: false,
+    });
+
+    var touchY = null;
+    var sTime = null;
+    $("#time_display, #time_slider").on({
+      touchstart: function (e) {
+        sTime = _getNewTime(e);
+        // スライダーの表示を更新
+        $("#slider input").val(sTime.timeVal).change();
+        // 時刻表示を更新
+        $.harpsModel.time.setDate(sTime.date);
+        // スライダーを下スワイプで閉じるようの値を取得
+        touchY = e.originalEvent.touches[0].pageY;
+        setTimeout(function () {
+          touchY = null;
+        }, 300);
+      },
+      touchmove: function (e) {
+        var nTime = _getNewTime(e);
+        // スライダーの表示を更新
+        $("#slider input").val(nTime.timeVal).change();
+        // 時刻表示を更新
+        $.harpsModel.time.setDate(nTime.date);
+      },
+      touchend: function (e) {
+        $("header .date .reload_button").trigger("stop_autoupdate");
+        var endTouchY = e.originalEvent.changedTouches[0].pageY;
+        if (touchY != null && endTouchY - touchY > 20) {
+          // 下スワイプの場合は時刻表示をsTimeに戻してスライダーを閉じる
+          $("#slider").trigger("close");
+          $("#slider input").val(sTime.timeVal).change();
+          $.harpsModel.time.setDate(sTime.date);
+        } else {
+          // タイル画像のデータのアップデート
+          $.harpsModel.overlayMaps.updateImg();
+          // 画像以外のデータのアップデート
+          $.harpsModel.tiles.updateOther();
+        }
+      },
+    });
+    $("#time_slider").on({
+      update: function () {
+        var cTimeVal = _getDayMinute($.harpsModel.time.now);
+        $("#slider input").val(cTimeVal).change();
+      },
+    });
+
+    // スライダーを表示するためのスワイプイベント
+    var swipe = false;
+    var startY = null;
+    $("#slider").on({
+      "touchstart.open_slider": function (e) {
+        swipe = true;
+        startY = e.originalEvent.touches[0].pageY;
+      },
+      open: function () {
+        $("#slider").addClass("open");
+      },
+      close: function () {
+        $("#slider").addClass("close");
+        setTimeout(function () {
+          $("#slider").removeClass("open");
+          $("#slider").removeClass("close");
+        }, 300);
+      },
+    });
+    $("body").on({
+      "touchend.open_slider": function (e) {
+        if (swipe == true) {
+          var endY = e.originalEvent.changedTouches[0].pageY;
+          if (startY - endY > 10) {
+            $("#slider").trigger("open");
+          }
+          swipe = false;
+        }
+        //e.stopPropergation();
+      },
+    });
+    // コメントアウト 2019.02.20 dol-add
+    // google.maps.event.addListener($.harpsModel.map, "mousedown", function(e){
+    //   $("#slider").trigger("close");
+    // });
+    // コメントアウト 2019.02.20 dol-end
+    // 2019.02.21 dol-add
+    $.harpsModel.map.on("mousedown", function () {
+      $("#slider").trigger("close");
+    });
+    // 2019.02.21 dol-end
+  };
+
+  // スライダー上の現在時刻,スライダーの設定値を取得
+  var _getNewTime = function (e) {
+    // スライダーの設定値の取得
+    var sliderLeft = $("#slider input").offset().left;
+    var sliderWidth = $("#time_slider .rangeslider").width();
+    var offsetX = Math.floor(e.originalEvent.touches[0].screenX - sliderLeft);
+    if (offsetX < 0) offsetX = 0;
+    if (offsetX > sliderWidth) offsetX = sliderWidth;
+    var timeVal = Math.floor(
+      (offsetX / sliderWidth) * parseInt($("#slider input").attr("max"))
+    );
+
+    // 現在時刻の取得
+    var objStart = new Date($.harpsModel.util.date2str($.harpsModel.time.now, "%Y/%m/%d 00:00:00"));
+    var objDate = new Date(objStart.getTime() + timeVal * 60 * 1000);
+    var objTime = objDate.getTime();
+    var latestTime = $.harpsModel.time.end.getTime();
+    var startTime = $.harpsModel.time.start.getTime();
+    // start, endの範囲外の場合はtimeValを再取得する
+    if (objTime > latestTime) {
+      objDate = new Date(latestTime);
+      var objToday = new Date(
+        $.harpsModel.util.date2str(objDate, "%Y/%m/%d 00:00:00")
+      );
+      timeVal = (objDate.getTime() - objToday.getTime()) / 60000;
+    }
+    if (objTime < startTime) {
+      objDate = new Date(startTime);
+      var objToday = new Date(
+        $.harpsModel.util.date2str(objDate, "%Y/%m/%d 00:00:00")
+      );
+      timeVal = (objDate.getTime() - objToday.getTime()) / 60000;
+    }
+    return { date: objDate, timeVal: timeVal };
+  };
+
+  // 指定した日時の当日からの通し分を取得
+  var _getDayMinute = function (time) {
+    var hour = $.harpsModel.util.date2str(time, "%H");
+    var min = $.harpsModel.util.date2str(time, "%M");
+    return parseInt(hour) * 60 + parseInt(min);
+  };
+
+  /**
+   * サブメニューの初期化
+   */
+  var _initSubMenu = function () {
+    _initViewURL();
+    if ($.harpsEnv.eventViewer && $.harpsEnv.eventViewer == true) {
+      setTimeout(function () {
+        _initEventViewer();
+      }, 10);
+    }
+
+    /******************************************************************************/
+    /* submenu_area autorun_button.click                                          */
+    /******************************************************************************/
+    $("#submenu_area .autorun_button").on("click", function(pEvent, pExtra) {
+        console.log("autorun_button start 1");
+    });
+  };
+  /**
+   * ViewURL表示の初期化
+   */
+  var _initViewURL = function () {
+    // URL表示の自動選択
+    var _fncSelectText = function (e) {
+      var text = $("#viewurl_dialog .textarea")[0];
+      text.focus();
+      text.setSelectionRange(0, text.value.length);
+    };
+    if ($.harpsModel.util.isMobileAgent() == false) {
+      $("#viewurl_dialog .textarea").on({
+        click: _fncSelectText,
+      });
+    } else {
+      $("#viewurl_dialog .textarea").on({
+        touchstart: _fncSelectText,
+      });
+    }
+
+    $("#submenu_area .view_url_button").on("click", function () {
+      var strViewUrl = $.harpsModel.viewurl.get();
+      $("#viewurl_dialog").children(".textarea").text(strViewUrl);
+      $("#viewurl_dialog").dialog({
+        title: VIEWURL_TITLE,
+        width: "70%",
+        height: 200,
+        dialogClass: "viewurl_dialog",
+        modal: true,
+        closeText: "",
+        position: { my: "center top+150", at: "center top", of: window },
+        show: 200,
+        hide: 200,
+        draggable: false,
+        open: function () {
+          $("#submenu_area").trigger("close_submenu");
+          _fncSelectText();
+          // closeボタンの追加
+          if ($(this).prev().children(".dialog_close").length == 0) {
+            $(".ui-dialog-titlebar-close").hide();
+            var $close = $('<div class="dialog_close" />');
+            var $dialog = $(this);
+            $close.on("click", function () {
+              $dialog.dialog("close");
+            });
+            $(this).prev().append($close);
+          }
+        },
+        resizable: false,
+      });
+    });
+  };
+
+  // イベント表示の初期化
+  var _initEventViewer = function () {
+    $("#submenu_area .event_button").harpsEventViewer({
+      jsonPath: "json/event.js",
+      appendTo: "header",
+      open: function () {
+        $.harpsModel.storage.set("eventView", true);
+        $("#submenu_area").trigger("close_submenu");
+      },
+      close: function () {
+        $.harpsModel.storage.set("eventView", false);
+        $("#submenu_area").trigger("close_submenu");
+      },
+    });
+    if ($.harpsModel.storage.get("eventView") != false) {
+      $("#submenu_area .event_button").trigger("create.harpsEventViewer");
+      $(window).trigger("resize.harpsEventViewer");
+    }
+  };
+
+  /**
+   * ズームボタンの初期化
+   */
+  var _initZoomBtn = function () {
+    // ズームイン/アウトボタンクリック時の処理
+    $(".zoom_in").on("click", function () {
+      if (!$(this).hasClass("disabled")) {
+        $.harpsModel.zoom.zoomIn();
+      }
+    });
+    $(".zoom_out").on("click", function () {
+      if (!$(this).hasClass("disabled")) {
+        $.harpsModel.zoom.zoomOut();
+      }
+    });
+
+    // ズームイベント発生時にズームイン/アウトボタンのdisabledを切り替える
+    $zoomBtn = $("#zoom_button");
+    $zoomBtn.on({
+      update: function () {
+        var zoom = $.harpsModel.map.getZoom();
+        if (zoom >= $.harpsEnv.mapOpt.maxZoom) {
+          $(".zoom_in").addClass("disabled");
+        } else {
+          $(".zoom_in").removeClass("disabled");
+        }
+        if (zoom <= $.harpsEnv.mapOpt.minZoom) {
+          $(".zoom_out").addClass("disabled");
+        } else {
+          $(".zoom_out").removeClass("disabled");
+        }
+        // zoom_min - zoom_maxの間にないデータは選択不可にする
+        $.harpsModel.tiles.chkZoomLevel();
+      },
+      lock: function () {
+        $(".zoom_in").addClass("disabled");
+        $(".zoom_out").addClass("disabled");
+      },
+      unlock: function () {
+        $(".zoom_in").removeClass("disabled");
+        $(".zoom_out").removeClass("disabled");
+      },
+    });
+    // コメントアウト 2019.02.20 dol-add
+    // google.maps.event.addListener($.harpsModel.map, "zoom_changed", function(){
+    //   $zoomBtn.trigger("update");
+    //   $("#data_select_box .data").each(function(){
+    //     var tileSetting = $.harpsModel.tiles.get($(this).attr("id"));
+    //     // センターアイコンのサイズ変更（レーダデータ向け）
+    //     $.harpsModel.overlayMaps.circles.zoomChange(tileSetting);
+    //   });
+    // });
+    // コメントアウト 2019.02.20 dol-end
+    // 2019.02.21 dol-add
+    $.harpsModel.map.on("zoomend", function () {
+      $zoomBtn.trigger("update");
+      $("#data_select_box .data").each(function () {
+        var tileSetting = $.harpsModel.tiles.get($(this).attr("id"));
+        // センターアイコンのサイズ変更（レーダデータ向け）
+        $.harpsModel.overlayMaps.circles.zoomChange(tileSetting);
+      });
+    });
+    // 2019.02.21 dol-end
+  };
+
+  /**
+   * 初期表示ボタンの初期化
+   */
+  var _initDefaultBtn = function () {
+    $(".center_button").on({
+      click: function () {
+        $.harpsModel.position.default();
+        $("#submenu_area").trigger("close_submenu");
+      },
+      lock: function () {
+        $(this).addClass("disabled");
+      },
+      unlock: function () {
+        $(this).removeClass("disabled");
+      },
+    });
+  };
+
+  /**
+   * 現在地表示ボタンの初期化
+   */
+  var _initGpsBtn = function () {
+    var success = function (pos) {
+      $(".gps_button").removeClass("gps_loading");
+      $(".gps_button").addClass("gps_on");
+
+      if ($.harpsModel.currentPos != null) {
+        $.harpsModel.currentPos.setMap(null);
+      }
+
+      const latLng = new mapboxgl.LngLat(
+        pos.coords.longitude,
+        pos.coords.latitude
+      );
+      const marker = new mapboxgl.Marker()
+        .setLngLat(latLng)
+        .addTo($.harpsModel.map);
+      $.harpsModel.currentPos = marker;
+      $.harpsModel.map.panTo(latLng);
+    };
+    var fail = function (error) {
+      alert(GPS_ERR2);
+      $(".gps_button").removeClass("gps_loading");
+    };
+
+    $(".gps_button").on({
+      click: function () {
+        $("#submenu_area").trigger("close_submenu");
+        if ($(this).hasClass("gps_on")) {
+          // gps_onの状態かつマーカーが画面内でクリックした場合はマーカーを消す
+          // マーカーが画面外にある場合は現在地を取得し直す
+          if ($.harpsModel.currentPos != null) {
+            if (
+              $.harpsModel.map
+                .getBounds()
+                .contains($.harpsModel.currentPos.position)
+            ) {
+              $(this).removeClass("gps_on");
+              $.harpsModel.currentPos.setMap(null);
+              return;
+            }
+          }
+        }
+        if (!$(this).hasClass("gps_loading")) {
+          $(this).removeClass("gps_on");
+          if (navigator.geolocation) {
+            $(this).addClass("gps_loading");
+            navigator.geolocation.getCurrentPosition(success, fail);
+          } else {
+            alert(GPS_ERR1);
+            $(this).removeClass("gps_loading");
+          }
+        } else {
+          // gps_loading状態の時は何もしない
+          // DO NOTHING
+        }
+      },
+      lock: function () {
+        $(this).addClass("disabled");
+      },
+      unlock: function () {
+        $(this).removeClass("disabled");
+      },
+    });
+  };
+
+  var _initDataControl = function () {
+    // データ選択ボタンのイベント追加
+    var _execByType = function (dname, tileFnc, markerFnc, defaultFnc) {
+      var tileSetting = $.harpsModel.tiles.get(dname);
+      switch (tileSetting.display) {
+        case "tile":
+          tileFnc(dname);
+          break;
+        case "marker":
+          markerFnc(dname);
+          break;
+        default:
+          defaultFnc(dname);
+          break;
+      }
+      $.harpsModel.viewurl.save();
+    };
+    // モバイルメニューの選択
+    $("#mobile-menu #data_select_box .data").on({
+      click: function () {
+        var dname = $(this).attr("id");
+        var tileSetting = $.harpsModel.tiles.get(dname);
+
+        if (!$(this).hasClass("on")) {
+          // exclusive設定が存在する場合はexclusive対象データをoffにする
+          if (tileSetting.exclusive) {
+            var elen = tileSetting.exclusive.length;
+            for (var i = 0; i < elen; i++) {
+              var $exclusive = $("#data_select_box").find("#" + tileSetting.exclusive[i]);
+              if ($exclusive.hasClass("on")) {
+                $exclusive.trigger("click");
+              }
+            }
+          }
+          _execByType(
+            dname,
+            $.harpsModel.overlayMaps.add,
+            $.harpsModel.marker.add,
+            function () {} // DO NOTHING
+          );
+          $(this).addClass("on");
+          $("#data_slider_box .slider[data-name=" + dname + "]").trigger(
+            "show"
+          );
+        } else {
+          _execByType(
+            dname,
+            $.harpsModel.overlayMaps.remove,
+            $.harpsModel.marker.remove,
+            function () {} // DO NOTHING
+          );
+          $(this).removeClass("on");
+          $("#data_slider_box .slider[data-name=" + dname + "]").trigger(
+            "hide"
+          );
+        }
+      },
+    });
+    $("#data_select_box .data, .sub-range .sub_data").on({
+      /* 03.23.2020 uchino */
+      open_box: function (e) {
+        var box_style = document.getElementById($(this).attr("id"));
+        $("#" + $(this).attr("id"))
+          .find(".ctrl_enabled")
+          .css("display", "flex");
+        $("#" + $(this).attr("id"))
+          .find(".ctrl_disabled")
+          .css("display", "none");
+      },
+      close_box: function (e) {
+        var box_style = document.getElementById($(this).attr("id"));
+        $("#" + $(this).attr("id"))
+          .find(".ctrl_disabled")
+          .css("display", "flex");
+        $("#" + $(this).attr("id"))
+          .find(".ctrl_enabled")
+          .css("display", "none");
+      },
+      /* 03.23.2020 uchino end */
+      select_data: function (e) {
+        if (!$(this).find(".ctrl_disabled").hasClass("turnBoxShow")) {
+          //03.23.2020 uchino
+          // return;
+        }
+        var dname = $(this).attr("id");
+        // 2017.08.04 村永
+        // h8jp選択時にh8jpの最新時刻を表示するように、最新時刻取得処理の呼び出し
+        // 時刻ステータスがlatestの場合(hasClassでは情報を取れない)
+        if ($.harpsModel.time.now.getTime() == $.harpsModel.time.end.getTime()) {
+          if (dname == "h8jp") {
+            $.harpsModel.time.getLatestH8jp();
+            $("header .date .reload_button").trigger("not_latest");
+          } else {
+            $.harpsModel.time.getLatest();
+	  }
+          if (dname == "amjp") {
+            // 初回表示時は処理しない
+            if (init_flag == true) {
+              init_flag = false;
+            } else {
+              // 2018.06.15 村永
+              // 日射量のON/OFFで最新or自動更新が解除されるのはやめる
+              //$("header .date .reload_button").trigger("not_latest");
+            }
+          }
+        }
+        // 2017.08.04 村永-end
+        //03.23.2020 uchino
+        //$(this).trigger("open_box." + dname);
+        $(this).trigger("open_box");
+
+        var tileSetting = $.harpsModel.tiles.get(dname);
+        var select;
+        if (tileSetting.children) {
+          $(this).find(".sub-range").trigger("open_sub");
+          select = tileSetting.children.selected;
+          var slen = select.length;
+          for (var i = 0; i < slen; i++) {
+            $("#" + select[i]).trigger("open_box");
+          }
+        } else {
+          select = [dname];
+        }
+        var slen = select.length;
+        for (var i = 0; i < slen; i++) {
+          _execByType(select[i], $.harpsModel.overlayMaps.add, $.harpsModel.marker.add, function (){} );
+        }
+        // サブメニューの選択上限数のチェック
+        if ($(this).hasClass(".sub_data")) {
+          $(this).parent(".sub-range").trigger("chk_select_max");
+        }
+        // exclusive設定が存在する場合はexclusive対象データをoffにする
+        if (tileSetting.exclusive) {
+          var elen = tileSetting.exclusive.length;
+          for (var i = 0; i < elen; i++) {
+            var $exclusive = $("#data_select_box").find(
+              "#" + tileSetting.exclusive[i]
+            );
+            if ($exclusive.hasClass("on")) {
+              $exclusive.trigger("unselect_data");
+            }
+          }
+        }
+        // mapColor設定が存在する場合はGoogleMapの色を設定する
+        if (tileSetting.mapColor != undefined) {
+          if ((tileSetting.mapColor == MCOLOR_WHITE && $("#map_select_box").hasClass("map_color_chg"))
+                    || (tileSetting.mapColor == MCOLOR_DARK && !$("#map_select_box").hasClass("map_color_chg"))) {
+            $("#map_select_box").find(".map_name.on").trigger("chg_map_style");
+          }
+        }
+        // logo設定が存在する場合はロゴにonクラスを付与する
+        $.harpsModel.logo.on(tileSetting);
+        e.stopPropagation();
+
+        // 2017.08.15 muranaga
+        if (dname == "h8jp" || dname == "h8jp_b13") {
+          data_type = "h8jp";
+        } else if (dname == "amjp") {
+          data_type = "amjp";
+        }
+        // 2017.08.15 muranaga-end
+      },
+      unselect_data: function (e) {
+        if (!$(this).find(".ctrl_enabled").hasClass("turnBoxShow")) {
+          // 03.23.2020 uchino
+          // return;
+        }
+        var dname = $(this).attr("id");
+        //03.23.2020 uchino
+        //$(this).trigger("close_box." + dname);
+        $(this).trigger("close_box");
+        var tileSetting = $.harpsModel.tiles.get(dname);
+        var select = [];
+        if (tileSetting.children) {
+          var children = $(this).find(".sub-range").children(".sub_data.on");
+          var clen = children.length;
+          for (var i = 0; i < clen; i++) {
+            children.eq(i).trigger("close_box");
+            select.push(children.eq(i).attr("id"));
+          }
+        } else {
+          select.push(dname);
+        }
+        var slen = select.length;
+        for (var i = 0; i < slen; i++) {
+          _execByType(
+            select[i],
+            $.harpsModel.overlayMaps.remove,
+            $.harpsModel.marker.remove,
+            function () {} // DO NOTHING
+          );
+        }
+        // サブメニューの選択上限数のチェック
+        if ($(this).hasClass("sub_data")) {
+          $(this).parent(".sub-range").trigger("enable_select");
+        }
+        // logo設定が存在する場合はロゴのonクラスを削除する
+        $.harpsModel.logo.off(tileSetting);
+        e.stopPropagation();
+      },
+    });
+
+    // turnBoxButtonのクリックによるturnBoxのアニメーションはoff
+    $(".pc-menu #data_select_box .turnBoxButton").off("click");
+
+    // 連続クリック防止用フラグ
+    // turnBoxのアニメーションが終わった後でフラグをfalseにする必要があるため、
+    // このフラグはクリック処理の後、setTimeoutで遅延させてからフラグをfalseにする
+    var selectClicking = false;
+    var unselectClicking = false;
+    // データ選択
+    $(
+      ".pc-menu #data_select_box .ctrl_disabled .col-right, .sub_data .ctrl_disabled"
+    ).on({
+      click: function (e) {
+        if (selectClicking == false && unselectClicking == false) {
+          selectClicking = true;
+          $(this).closest(".tnBox").parent().trigger("select_data");
+          setTimeout(function () {
+            selectClicking = false;
+          }, DCTRL_CLICK_INTERVAL);
+        }
+      },
+    });
+
+    // 選択解除
+    var unselect = false;
+    var mouseDown = false;
+    var startX = null;
+    $(
+      ".pc-menu #data_select_box .ctrl_enabled.not_exclude .col-right, .sub_data .ctrl_enabled"
+    ).on({
+      mousedown: function (e) {
+        if (selectClicking == false && unselectClicking == false) {
+          unselectClicking = true;
+          unselect = true;
+          mouseDown = true;
+          startX = e.offsetX;
+          setTimeout(function () {
+            unselectClicking = false;
+          }, DCTRL_CLICK_INTERVAL);
+        } else {
+          unselect = false;
+          mouseDown = false;
+        }
+      },
+      mouseup: function (e) {
+        mouseDown = false;
+        if (unselect == true) {
+          unselect = false;
+          $(this).closest(".tnBox").parent().trigger("unselect_data");
+        }
+      },
+      mousemove: function (e) {
+        if (mouseDown == true) {
+          var offsetX = e.originalEvent.offsetX;
+          if (Math.abs(startX - offsetX) > DCTRL_SELECT_THRESHOULD) {
+            unselect = false;
+            var width = $(this).width();
+            var opacity = Math.ceil((offsetX / width) * 10);
+            if (opacity < 1) opacity = 1;
+            if (opacity > 10) opacity = 10;
+            if ($(this).find("input[type=range]").val() != opacity) {
+              $(this).find("input[type=range]").val(opacity);
+              $(this).find("input[type=range]").trigger("ch_opacity");
+            }
+          }
+        }
+      },
+      mouseleave: function (e) {
+        unselect = false;
+      },
+      // タブレット用
+      touchmove: function (e) {
+        var offsetX =
+          e.originalEvent.touches[0].clientX - $(this).offset().left;
+        if (Math.abs(startX - offsetX) > DCTRL_SELECT_THRESHOULD) {
+          unselect = false;
+          var width = $(this).width();
+          var opacity = Math.ceil((offsetX / width) * 10);
+          if (opacity < 1) opacity = 1;
+          if (opacity > 10) opacity = 10;
+          if ($(this).find("input[type=range]").val() != opacity) {
+            $(this).find("input[type=range]").val(opacity);
+            $(this).find("input[type=range]").trigger("ch_opacity");
+          }
+        }
+      },
+    });
+    $(document).on("mouseup.map", function () {
+      mouseDown = false;
+    });
+
+    // サブメニュー表示ボタンクリック時の処理
+    $(".move").on({
+      mousedown: function (e) {
+        mouseDown = false;
+        unselect = false;
+        if ($(this).parent().next(".sub-range").hasClass("active")) {
+          $(this).parent().next(".sub-range").toggleClass("active", false);
+        } else {
+          $(".sub-range").toggleClass("active", false);
+          $(this).parent().next(".sub-range").toggleClass("active");
+        }
+        e.stopPropagation();
+      },
+    });
+
+    // サブメニューのイベント登録
+    $(".pc-menu .sub-range").on({
+      chk_select_max: function () {
+        var dname = $(this).parents(".data").attr("id");
+        var tileSetting = $.harpsModel.tiles.get(dname);
+        if (tileSetting.children.selectMax) {
+          if (
+            $(this).children(".sub_data.on").length >=
+            tileSetting.children.selectMax
+          ) {
+            $(this).children(":not(.on)").addClass("disabled");
+          }
+        }
+      },
+      enable_select: function () {
+        var dname = $(this).parents(".data").attr("id");
+        var tileSetting = $.harpsModel.tiles.get(dname);
+        if (tileSetting.children.selectMax) {
+          if (
+            $(this).children(".sub_data.on").length <
+            tileSetting.children.selectMax
+          ) {
+            $(this).children(":not(.on)").removeClass("disabled");
+          }
+        }
+      },
+    });
+
+    // 画像透過率変更処理
+    var opClass = "";
+    for (var i = 1; i <= 10; i++) {
+      opClass += "opacity_" + i.toString() + " ";
+    }
+    var _chOpacity = function (val, tileName) {
+      if (!$("#map div.tile_image[data-type=" + tileName + "]").eq(0).hasClass("opacity_" + val.toString())) {
+        $("#map div.tile_image[data-type=" + tileName + "]").removeClass(opClass);
+        $("#map div.tile_image[data-type=" + tileName + "]").addClass("opacity_" + val.toString());
+        $("#legend ." + tileName + " .colorbar img").removeClass(opClass);
+        $("#legend ." + tileName + " .colorbar img").addClass("opacity_" + val.toString());
+        $.harpsModel.tiles.info[tileName]["opacity"] = val;
+        //$.harpsModel.tiles.get(tileName).style.opacity = val / 10.0;
+      }
+      // MIERUNE
+      if ($.harpsModel.map.getLayer(tileName)) {
+        $.harpsModel.map.setPaintProperty(tileName, "raster-opacity", val / 10.0);
+      }
+      $.harpsModel.tiles.get(tileName).style.opacity = val / 10.0;
+      $.harpsModel.viewurl.save();
+
+      // コメントアウト 2019.02.27 dol-add
+      // if(!$("#map div.tile_image[data-type=" + tileName + "]").eq(0).hasClass("opacity_" + val.toString())){
+      //   $("#map div.tile_image[data-type=" + tileName + "]").removeClass(opClass);
+      //   $("#map div.tile_image[data-type=" + tileName + "]").addClass("opacity_" + val.toString());
+      //   $("#legend ." + tileName + " .colorbar img").removeClass(opClass);
+      //   $("#legend ." + tileName + " .colorbar img").addClass("opacity_" + val.toString());
+      //   $.harpsModel.tiles.info[tileName]["opacity"] = val;
+      // }
+      // コメントアウト 2019.02.27 dol-add
+      // 2019.02.27 dol-add
+      /*
+    $.each($.harpsModel.overlayGroup._layers, function (e) {
+      if ( this.options.name == tileName ) {
+        this.setOpacity(val * 0.1);
+        var tlen = $.harpsEnv.tiles.length;
+        for(var i=0; i<tlen; i++){
+          if ( $.harpsEnv.tiles[i].name == tileName ) {
+            $.harpsEnv.tiles[i].style.opacity = val * 0.1;
+          }
+        }
+      }
+    })
+    */
+      // 2019.02.27 dol-end
+      //$.harpsModel.viewurl.save();
+    };
+    // モバイル用タイル画像透明度変更処理
+    $("#mobile-menu #data_slider_box").on(
+      {
+        transparent: function (e, val) {
+          var tileName = $(this).attr("data-name");
+          _chOpacity(val, tileName);
+        },
+        show: function (e, val) {
+          $(this).addClass("show");
+        },
+        hide: function (e, val) {
+          $(this).removeClass("show");
+        },
+      },
+      ".slider"
+    );
+    // PC,tablet用タイル画像透明度変更処理
+    $(".pc-menu #data_select_box").on(
+      {
+        ch_opacity: function () {
+          var tileName = $(this).next(".turnBoxButton").attr("data-name");
+          if ($(this).parent().next(".sub-range").length != 0) {
+            var $children = $(this)
+              .parent()
+              .next(".sub-range")
+              .children(".sub_data");
+            var cCnt = $children.length;
+            var val = $(this).val();
+            for (var i = 0; i < $children.length; i++) {
+              var $child = $children.eq(i);
+              _chOpacity(val, $child.attr("id"));
+            }
+          } else {
+            _chOpacity($(this).val(), tileName);
+          }
+        },
+      },
+      ".data input[type='range']"
+    );
+
+    // GoogleMapのMapTypeID変更処理
+    $("#map_select_box .map_name").on({
+      set_map_type: function () {
+        // MapTypeIdの変更
+        var mapStyle = null; // MIERUNE
+
+        $("#map_select_box input[type='radio']").prop("checked", false);
+        var $input = $(this).prev("input[type='radio']");
+        $input.prop("checked", true);
+        if ($input.hasClass("roadmap")) {
+          $("#map_select_box .terrain").removeClass("on");
+          $("#map_select_box .terrain").next("span").removeClass("on");
+          $("#map_select_box .roadmap").addClass("on");
+          $("#map_select_box .roadmap").next("span").addClass("on");
+          // コメントアウト 2019.02.20 dol-add
+          // maptypeid = google.maps.MapTypeId.ROADMAP;
+          // 2019.02.20 dol-add
+          //maptypeid = $.harpsEnv.baseMaps.gsi;
+          mapStyle = {
+            version: 8,
+            sources: {
+              "gsi-pale": {
+                type: "raster",
+                tiles: [
+                  "https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",
+                ],
+                tileSize: 256,
+                attribution:
+                  '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
+              },
+            },
+            layers: [
+              {
+                id: "gsi-pale",
+                type: "raster",
+                source: "gsi-pale",
+                minzoom: 5,
+                maxzoom: 15,
+                paint: {
+                  "raster-opacity": 0.8,
+                },
+              },
+            ],
+          };
+        } else if ($input.hasClass("terrain")) {
+          $("#map_select_box .roadmap").removeClass("on");
+          $("#map_select_box .roadmap").next("span").removeClass("on");
+          $("#map_select_box .terrain").addClass("on");
+          $("#map_select_box .terrain").next("span").addClass("on");
+          // コメントアウト 2019.02.20 dol-add
+          // maptypeid = google.maps.MapTypeId.TERRAIN;
+          // 2019.02.20 dol-add
+          //maptypeid = $.harpsEnv.baseMaps.gsiHill;
+          mapStyle = {
+            version: 8,
+            sources: {
+              "gsi-photo": {
+                type: "raster",
+                tiles: [
+                  "https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg",
+                ],
+                tileSize: 256,
+                attribution:
+                  '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
+               },
+             },
+             layers: [
+               {
+                 id: "gsi-photo",
+                 type: "raster",
+                 source: "gsi-photo",
+                 minzoom: 5,
+                 maxzoom: 15,
+                 paint: {
+                   "raster-opacity": 0.8,
+                 },
+               },
+             ],
+           };
+         } else {
+           return;
+         }
+         // コメントアウト 2019.02.20 dol-add
+         // $.harpsModel.map.setMapTypeId(maptypeid);
+         // 2019.02.20 dol-add
+         /*
+         if (maptypeid == $.harpsEnv.baseMaps.gsiHill) {
+           $.harpsModel.baseMapGroup.addLayer(maptypeid);
+         } else {
+           $.harpsModel.baseMapGroup.removeLayer($.harpsEnv.baseMaps.gsiHill);
+         }
+         */
+         $.harpsModel.map.setStyle(mapStyle);
+       },
+       chg_map_style: function () {
+         // MapStyleの変更
+         $.harpsModel.mapStyle.chgStyle();
+         $(this).parents("#map_select_box").toggleClass("map_color_chg");
+       },
+       click: function () {
+         var $input = $(this).prev("input[type='radio']");
+         if (!$input.hasClass("on")) {
+           $(this).trigger("set_map_type");
+         } else {
+           $(this).trigger("chg_map_style");
+         }
+        $.harpsModel.viewurl.save();
+      },
+    });
+    // コメントアウト 2019.02.26 dol-add
+    // $("#map_select_box ." + $.harpsEnv.mapOpt.mapTypeId).next(".map_name").trigger("on");
+    // コメントアウト 2019.02.26 dol-end
+    // 2019.02.26 dol-add
+    // $("#map_select_box ." + $.harpsEnv.mapOpt.mapTypeId).next(".map_name").trigger("on");
+  };
+
+  var _initCtrl = function () {
+    $("body").append('<div id="gps_button" class="btn gps_button"></div>');
+    if (!$.harpsModel.util.isMobileWindow()) {
+      $("#zoom_button").append('<div class="zoom_in btn"><span></span></div><div class="zoom_out btn"><span></span></div>');
+      if ($.harpsEnv.menu_button) {
+        if ($.harpsEnv.menu_button.playback && $.harpsEnv.menu_button.playback == true){
+          $("body").append('<div id="playback_button" class="btn playback_button"></div>');
+        }
+        if ($.harpsEnv.menu_button.center && $.harpsEnv.menu_button.center == true){
+          $("body").append('<div id="center_button" class="btn center_button"></div>');
+        }
+      }
+    } else {
+      $("#gps_button").addClass("mobile");
+    }
+    _initZoomBtn();
+    _initDefaultBtn();
+    _initGpsBtn();
+    _initMenuBtn();
+    _initSubMenu();
+    _initDataControl();
+  };
+
+  $.harpsView = {
+    init: function () {
+      _initMap();
+      _initCtrl();
+      initTimeline();
+      $.harpsViewLocalHIMAWARI.init();    
+
+      $(window).on("focus", function () {
+        $(document.activeElement).blur();
+      });
+
+      if ($.harpsModel.util.isMobileWindow()) {
+        // モバイルの場合はlegend, 警報一覧のサイズを変更する
+        $("#legend").addClass("mobile");
+        $("#wwarn_list").addClass("mobile");
+
+        // mobile.autorun = falseの場合は自動再生を無効化する
+        //if ($.harpsEnv.mobile.autorun == false) {
+        //  $("#time_controller > .time_next").off("mousedown");
+        //  $("#time_controller > .time_prev").off("mousedown");
+        //  $("#submenu_area .playback_button").remove();
+        //}
+      }
+      console.log("$.harpsModel.viewurl.params.sI = " + $.harpsModel.viewurl.params.sI);
+      if (!$.harpsModel.viewurl.params.sI) {
+        // デフォルトのデータを選択状態にする
+        //for (var i = 0; i < $.harpsEnv.defaultMaps.length; i++) {
+          //$(".pc-menu #data_select_box #" + $.harpsEnv.defaultMaps[i]).find(".ctrl_disabled .turnBoxButton").trigger("click");
+          //$("#mobile-menu #data_select_box #" + $.harpsEnv.defaultMaps[i]).trigger("click");
+          // 2017.08.25 muranaga
+          // 初期表示時に気象警報を出そうとしたがdefaultMapsに追記しても表示されないため、
+          // 暫定的にsIが定義されていない場合は強制的にamjp, wwarnをsIに設定する
+          // 要素名のあとの数字が0だと非表示、1だと表示、二つ目の数字は透明度
+          // ここの記述順番が、そのまま並び順になる
+          // 2017.08.25 muranaga-end
+        //}
+
+        // 初期表示時に気象警報を出そうとしたがdefaultMapsに追記しても表示されないため、
+        // 暫定的にsIが定義されていない場合は強制的にamjp, wwarnをsIに設定する
+        // 要素名のあとの数字が0だと非表示、1だと表示、二つ目の数字は透明度
+        // ここの記述順番が、そのまま並び順になる
+        //$.harpsModel.viewurl._set.sI("amjp-1-9,amjp_pvp-0-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_wndmznl-0-4,amjp_wndspd-0-4,h8jp-0-10,wni-0-4,mprd_pv_22-0-4,mprd_rz_22-0-4,jrrd_pv_22-0-4,wwarn-1,dam_map-0-4");
+        //$.harpsModel.viewurl._set.sI("amjp-1-9,amjp_pvp-0-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_noct-0-4,amjp_wndmznl-0-4,amjp_wndspd-0-4,h8jp-0-10,wni-0-4,radar-0-4,wwarn-1,dam_map-0-4");
+        //$.harpsModel.viewurl._set.sI("amedas-0,amjp-1-9,amjp_pvp-0-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_noct-0-4,amjp_wnd-0-4,h8jp-0-10,wni-0-4,radar-0-4,wwarn-1,dam_map-0-4");
+        //$.harpsModel.viewurl._set.sI("amjp-1-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_wnd-0-4,h8jp-0-10,h8jp_b13-0-10,wni-0-4,wwarn-1,amedas-0,dam_map-0-4");
+        $.harpsModel.viewurl._set.sI("amjp-1-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_wnd-0-4,h8jp-0-10,h8jp_b13-0-10,wni-0-4,wwarn-1,amedas-0,amjp_point-0-4");
+      }
+      console.log("$.harpsModel.viewurl.params.sI =      +");
+      //console.log("$.harpsModel.viewurl.params.sI = " + $.harpsModel.viewurl._get.sI());
+
+      $("#zoom_button").trigger("update");
+      $.harpsModel.viewurl.set();
+      $.harpsModel.tiles.setZindex();
+
+      var verText = $("p.version").text();
+      verText = verText.replace("[version]", $.harpsEnv.appVersion);
+      verText = verText.replace("[lastupdate]", $.harpsEnv.lastUpdate);
+      $("p.version").text(verText);
+
+      // himawariWebからの呼び出し
+      /*
+      if ($.harpsModel.viewurl.params.exCo) {
+        if($.harpsModel.viewurl.params.exCo == 'himawari'){
+          setTimeout(function(){
+            var rc = window.confirm("ひまわりWebから表示されました。このまま表示しますか。");
+            if (rc === false) {
+              open('about:blank', '_self').close();
+            }
+          }, 3000);
+	}
+      }
+      */
+    },
+    /**
+     * データ選択ボタン初期化処理
+     */
+    dataCtrl: {
+      pcTmpl: {
+        create: function (tile, i) {
+          var $ctrlBox = $(".pc #data_select_box");
+          var $ctrlUI;
+          $ctrlUI = this.parentNode(tile, i);
+          $ctrlBox.append($ctrlUI);
+        },
+        parentNode: function (tile, i) {
+          //console.log("dataCtrl.pcTmpl.parentNode tile", tile);
+          var sortClass = "none";
+          var sortableClass = "";
+          if (tile.sortable && tile.sortable == true) {
+            sortClass = "drag";
+            sortableClass = "sortable";
+          }
+          var updateClass = "none";
+          if (tile.update && tile.update == true) {
+            updateClass = "time";
+          }
+          var slider = "";
+          var sliderClass = "no-range";
+          if (tile.transparent && tile.transparent == true) {
+            slider = "<input type='range' id='r" + i + "' min='1' max='10'step='1' />";
+            sliderClass = "";
+          }
+          var ctrlHtml = '<div class="data ' + sortableClass + '"><div class="tnBox switch"><div class="menu-box ctrl_disabled"><div class="col-left"><dl><dt class="' +
+                             sortClass + '"></dt><dt class="' + updateClass +
+                             '"></dt></dl></div><div class="col-right"><p class="turnBoxButton dctrl_name off"></p></div></div><div class="menu-box ctrl_enabled"><div class="col-left"><dl><dt class="' +
+                             sortClass + '"></dt><dt class="' + updateClass + '"></dt></dl></div><div class="col-right ' + sliderClass + '">' +
+                             slider + '<p class="turnBoxButton turnBoxButtonPrev dctrl_name"></p></div></div></div></div>';
+          var $ctrl = $(ctrlHtml);
+          $ctrl.attr("id", tile.name);
+          $ctrl.find(".dctrl_name").text(tile.label).attr("data-name", tile.name);
+          if (tile.style && tile.style.opacity) {
+            $ctrl.find("input[type='range']").val(parseInt(tile.style.opacity * 10));
+          }
+          $ctrl.find(".ctrl_enabled").addClass("not_exclude");
+          if (tile.children) {
+            $ctrl.addClass("parent");
+            $ctrl.find(".ctrl_enabled .col-right").addClass("col-right-move");
+            $ctrl.find(".ctrl_enabled .col-right").append("<span class='move' />");
+            var childrenNode;
+            if (tile.children.getNode != undefined) {
+              childrenNode = tile.children.getNode();
+            }
+            var $submenu = this.childrenNode(childrenNode, i);
+            $ctrl.find(".ctrl_enabled").append($submenu);
+          }
+          return $ctrl;
+        },
+        childrenNode: function (children, i) {
+          var $childrenNode = $("<div class='sub-range' />");
+          var cCnt = children.length;
+          var childHtml = "";
+
+          for (var j = 0; j < cCnt; j++) {
+            var index = j + i * 100;
+            var slider = "";
+            if (children[j].transparent && children[j].transparent == true) {
+              slider = "<input type='range' id='r" + index + "' min='1' max='10'step='1' value='" + parseInt(children[j].style.opacity * 10) + "' />";
+            }
+            $child = $(
+              "<div class='sub_data data'><div class='tnBox switch'><div class='menu-box ctrl_disabled'><p class='turnBoxButton off' /></div><div class='menu-box ctrl_enabled'>" +
+                slider +
+                "<p class='turnBoxButton turnBoxButtonPrev' /></div></div></div>"
+            );
+            $child.find("p").text(children[j].label).attr("data-name", children[j].name);
+            $child.attr("id", children[j].name);
+            $childrenNode.append($child);
+
+            if (children[j].children) {
+              var $childChildrenNode = this.childrenNode(children[j].children, index);
+              $childrenNode.append("<span class='move' />");
+              $childrenNode.append($childChildrenNode);
+            }
+          }
+          return $childrenNode;
+        },
+        //*
+        format: function () {
+          //*
+          // データ選択ボタンクリック時の処理
+          //console.log("debuglog .tnBox ");
+          $(".tnBox").css({
+            //width: 220,
+            height: 40,
+            easing: "ease-in-out",
+            duration: 400,
+          });
+          var $tnBox = $(".tnBox");
+          var blen = $tnBox.length;
+
+          for (var i = 0; i < blen; i++) {
+            var $box = $tnBox.eq(i).parent();
+            /*
+          $box.turnBoxLink({
+            box : "#" + $box.attr("id") + " > .tnBox",
+            events : "open_box." + $box.attr("id"),
+            dist : "next"
+          });
+          $box.turnBoxLink({
+            box : "#" + $box.attr("id") + " > .tnBox",
+            events : "close_box." + $box.attr("id"),
+            dist : "prev"
+          });
+           //*/
+          }
+          // サブメニューの表示/非表示切替処理
+          $(".sub-range").on({
+            open_sub: function () {
+              $(".sub-range").toggleClass("active", false);
+              $(this).toggleClass("active", true);
+            },
+            close_sub: function () {
+              $(this).toggleClass("active", false);
+            },
+          });
+
+          // 表示順変更処理
+          var _toArray = function (ui) {
+            var citem = $(ui.item[0]).attr("id");
+            var items = $("#data_select_box > .data");
+            var ilen = items.length;
+            var sortArr = [];
+            for (var i = 0; i < ilen; i++) {
+              var $item = $("#data_select_box > .data").eq(i);
+              if ($item.attr("id") === citem) {
+                continue;
+              }
+              if ($item.hasClass("ui-sortable-placeholder")) {
+                sortArr.push(citem);
+                continue;
+              }
+              sortArr.push($item.attr("id"));
+            }
+            return sortArr;
+          };
+          $("#data_select_box").sortable({
+            axis: "y",
+            containment: "parent",
+            tolerance: "pointer",
+            distance: 10,
+            items: ".data.sortable",
+            handle: ".drag",
+            update: function (e, ui) {
+              var sortArr = $(".data_ctrl_box").sortable("toArray");
+            },
+            change: function (e, ui) {
+              var sortArr = _toArray(ui);
+              $.harpsModel.overlayMaps.sort(sortArr);
+            },
+          });
+
+          $(".ctrl_enabled dt.time").on({
+            click: function () {
+              var $dctrl = $(this).parents(".data");
+              var dname = $dctrl.attr("id");
+              var tileSetting = $.harpsModel.tiles.get(dname);
+              if (tileSetting.cType != undefined) {
+                for (var i = 0; i <= tileSetting.cType.max; i++) {
+                  $(this).removeClass("ctype_" + i);
+                }
+                $.harpsModel.tiles.info[dname].cType++;
+                if (
+                  $.harpsModel.tiles.info[dname].cType > tileSetting.cType.max
+                ) {
+                  $.harpsModel.tiles.info[dname].cType =
+                    tileSetting.cType.defval;
+                }
+                $.harpsModel.overlayMaps.update();
+                $(this).addClass(
+                  "ctype_" + $.harpsModel.tiles.info[dname].cType
+                );
+              }
+            },
+          });
+          //*/
+        },
+        //*/
+        slider: function () {
+          var range_els = document.querySelectorAll("[class*=webkit] input[type=range]"),
+                                  n_els, style_el, styles, units, base_sel, track_sel, _thumb_sel, a, b;
+
+          if (range_els) {
+            style_el = document.createElement("style");
+            document.body.appendChild(style_el);
+
+            n_els = range_els.length;
+
+            styles = [];
+            units = ["GHz", ["MB", "GB"], "GB"];
+
+            base_sel = ".js input[type=range]";
+            track_sel = ["::-webkit-slider-runnable-track", " /deep/ #track"];
+            thumb_sel = ["::-webkit-slider-thumb", " /deep/ #thumb"];
+            a = ":after";
+            b = ":before";
+
+            // スライダーの背景色の幅の変更処理
+            var _chg_slider = function (slider) {
+              var idx = slider.id.split("r")[1];
+              min = slider.min || 0;
+              max = slider.max || 10;
+              perc = ~~((100 * (slider.value - min)) / (max - min));
+              val = ~~slider.value;
+              u = units[idx - 1];
+              curr_sel = base_sel + "[id=r" + idx + "]";
+              str = "";
+              if (idx == 2) {
+                u = u[val < 3 ? 0 : 1];
+                val = val < 3 ? Math.pow(2, 7 + val) : val - 2;
+              }
+
+              str += curr_sel + track_sel[0] + "{background-size:" + perc + "% 100%}";
+              str += curr_sel + thumb_sel[0] + b + "," + curr_sel + thumb_sel[1] + b + '{content:"' + val + '"}';
+              str += curr_sel + thumb_sel[0] + a + "," + curr_sel + thumb_sel[1] + a + '{content:"' + u + '"}';
+
+              styles[idx] = str;
+
+              style_el.textContent = styles.join("");
+            };
+
+            for (var i = 0; i < n_els; i++) {
+              $(range_els[i]).on({
+                ch_opacity: function () {
+                  _chg_slider(this);
+                  if ($(this).attr("data-type") != undefined) {
+                    var inputs = $(this).parents(".data").find("input[data-type=" + $(this).attr("data-type") + "]");
+                    var ilen = inputs.length;
+                    for (var j = 0; j < ilen; j++) {
+                      var input = inputs[j];
+                      if (input != this && input.value != this.value) {
+                        input.value = this.value;
+                        $.harpsModel.tiles.info[$(input).parents(".ctrl_enabled").attr("id")]["opacity"] = val;
+                        _chg_slider(input);
+                      }
+                    }
+                  }
+                },
+              });
+              $(range_els[i]).trigger("ch_opacity");
+            }
+          }
+        },
+      },
+      mobileTmpl: {
+        create: function (tile, i) {
+          /*
+          var $ctrlBox = $(".mobile #data_select_box");
+          var $ctrlUI = this.parentNode(tile, i);
+          $ctrlBox.append($ctrlUI);
+          */
+        },
+        parentNode: function (tile, i) {
+          var slider = "";
+          var sliderClass = "no-range";
+          if (tile.transparent && tile.transparent == true) {
+            $slider = $('<div id="range' + i + '" class="slider"><div class="slider-wrapper"><div class="opacity_slider" /></div></div>');
+            $slider.attr("data-name", tile.name);
+            $("#data_slider_box").append($slider);
+          }
+          var ctrlHtml = '<label class="data"><span /></label>';
+          var $ctrl = $(ctrlHtml);
+          $ctrl.attr("id", tile.name);
+          $ctrl.children("span").text(tile.label);
+          return $ctrl;
+        },
+        slider: function () {
+          /*
+          $("#data_slider_box").find(".opacity_slider").each(function () {
+              var tile = $.harpsModel.tiles.get($(this).parents(".slider").attr("data-name"));
+              var min = 1;
+              var max = 10;
+              if (tile.mobile != undefined && tile.mobile.opacity != undefined) {
+                if (tile.mobile.opacity.max != undefined) {
+                  max = tile.mobile.opacity.max;
+                }
+                if (tile.mobile.opacity.min != undefined) {
+                  min = tile.mobile.opacity.min;
+                }
+              }
+              console.log($(this).parents(".slider").attr("data-name") + ":" + min + ", " + max);
+              $(this).slider({
+                min: min,
+                max: max,
+                step: 1,
+                value: $.harpsModel.tiles.get($(this).parents(".slider").attr("data-name")).style.opacity * 10,
+                change: function (e, ui) {
+                  $(this).parents(".slider").trigger("transparent", ui.value);
+                },
+                slide: function (e, ui) {
+                  $(this).parents(".slider").trigger("transparent", ui.value);
+                },
+              });
+          });
+          */
+        },
+      },
+      sort: function (dlist) {
+        $.each(dlist, function () {
+          var $item = $("#data_select_box #" + this + ".data");
+          var sortItem;
+          if ($item.hasClass("sub_data")) {
+            sortItem = $item.parents(".parent");
+          } else {
+            sortItem = $item;
+          }
+          $("#data_select_box").append(sortItem);
+        });
+      },
+      // 2017.08.15 muranaga
+      getDataType: function () {
+        return data_type;
+      },
+    },
+  };
+
+  const key = "AIzaSyAj4M65t0ZNRgINv_3MO5Ks0XktoqElKnY";
+  //const key = 'AIzaSyCFiPigHFOsY_rTWuU3u6Zu9k1NKkBfzNQ'
+  //
+
+/*
+  var GeoCoding = function (lat, lng, callback) {
+    $.getJSON({
+      url: `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`,
+      dataType: "json",
+    })
+      .fail(function () {
+        console.log(status);
+      })
+      .then(function (data, status) {
+        var address;
+        var address_num = data.results[0].address_components.length;
+
+        if (address_num >= 3) {
+          address =
+            data.results[0].address_components[address_num - 3].long_name;
+        }
+        if (address_num >= 4) {
+          address +=
+            data.results[0].address_components[address_num - 4].long_name;
+        }
+        if (address_num >= 5) {
+          address +=
+            data.results[0].address_components[address_num - 5].long_name;
+        }
+        if (address_num >= 6) {
+          address +=
+            data.results[0].address_components[address_num - 6].long_name;
+        }
+        address = address.replace(/Unnamed Road/, "");
+        callback(address);
+        console.log("geocoding " + address + " " + typeof address);
+      });
+  };
+*/
+  // 初期化処理
+  //$(window).on("load", function(){//})
+  console.log("gisapp init");
+  setTimeout(function _loop() {
+    if(typeof $.harpsModel.init === undefined) {
+      setTimeout(_loop, 500);
+    } else {
+      $.harpsModel.init();
+      $.harpsModel.map.on("style.load", function () {
+        $.harpsView.init();
+      });
+
+  if ($.harpsModel.viewurl.params.exCo && $.harpsModel.viewurl.params.exCo == 'himawari') {
+    setTimeout(function(){
+      var rc = window.confirm("ひまわりWebから表示されました。このまま表示しますか。");
+      if (rc === false) {
+        open('about:blank', '_self').close();
+      }
+    }, 4000);
+  }
+
+    }
+  }, 500); 
+
+  //$.harpsModel.init();
+  //$.harpsModel.map.on("style.load", function () {
+  //  $.harpsView.init();
+  //});
+
+  //console.log("himawari init() end - $.harpsModel.time.now = " +  $.harpsModel.time.now);
+  /*if ($.harpsModel.viewurl.params.exCo && $.harpsModel.viewurl.params.exCo == 'himawari') {
+    setTimeout(function(){
+      var rc = window.confirm("ひまわりWebから表示されました。このまま表示しますか。");
+      if (rc === false) {
+        open('about:blank', '_self').close();
+      }
+    }, 4000);
+  }*/
+});
+

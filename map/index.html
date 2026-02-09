@@ -1,0 +1,357 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# website: http://ogp.me/ns/website#">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Style-Type" content="text/css"/>
+    <meta http-equiv="x-ua-compatible" content="IE=11">
+    <meta http-equiv="x-ua-compatible" content="IE=EmulateIE11">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ローカルひまわり</title>
+    <link rel="icon" href="favicon.ico">
+    
+    <!--script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.9.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.9.0/mapbox-gl.css' rel='stylesheet'/-->
+
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.css' rel='stylesheet'/>
+
+    <script type="text/javascript" src="js/modernizr.js"></script>
+    <script type="text/javascript" src="js/jquery-3.5.1.js"></script>
+    <!--script src="https://code.jquery.com/jquery-migrate-3.1.0.js"></script-->
+    <script type="text/javascript" src="js/jquery-ui-1.12.1.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.touch-punch.min.js"></script>
+    <script type="text/javascript" src="js/picker.js"></script>
+    <script type="text/javascript" src="js/picker.date.js"></script>
+    <script type="text/javascript" src="js/picker.date.lang.js"></script>
+    <script type="text/javascript" src="js/jquery-popup-message.js"></script>
+    <script type="text/javascript" src="js/jquery-harps-ajax-manager.js"></script>
+    <script type="text/javascript" src="js/jquery-harps-event-viewer.js"></script>
+    <script type="text/javascript" src="js/rangeslider.min.js"></script>
+    <script type="text/javascript" src="js/harps-env.js"></script>
+    <script type="text/javascript" src="js/harps-model.js"></script>
+    <script type="text/javascript" src="js/harps-model-localhimawari.js"></script>
+    <script type="text/javascript" src="js/harps-view.js"></script>
+    <script type="text/javascript" src="js/harps-view-localhimawari.js"></script>
+    <script type="text/javascript" src="js/local2realtime.js"></script>
+    <script type="text/javascript" src="js/prefixfree.min.js"></script>
+    <!-- script type="text/javascript" src="js/jquery-k2go-timeline.js"></script -->
+
+    <script type="text/javascript" src="js/starstouch/base64.js"></script>
+    <script type="text/javascript" src="js/starstouch/deflate.js"></script>
+    <script type="text/javascript" src="js/starstouch/inflate.js"></script>
+    <script type="text/javascript" src="js/starstouch/utf.js"></script>
+ 
+    <script type="text/javascript" src="js/starstouch/jquery-nict-stars-logger.js"></script>
+    <script type="text/javascript" src="js/starstouch/jquery-nict-stars-touch.js"></script>
+    <script type="text/javascript" src="js/starstouch/jquery-nict-stars-view-url.js"></script>
+
+    <link type="text/css" href="font/pe-icon-7-stroke/css/pe-icon-7-stroke.css" rel="stylesheet"/>
+    <link type="text/css" href="font/pe-icon-7-stroke/css/helper.css" rel="stylesheet"/>
+    <link type="text/css" href="font/pe-icon-7-filled/css/pe-icon-7-filled.css" rel="stylesheet"/>
+    <link type="text/css" href="font/pe-icon-7-filled/css/helper.css" rel="stylesheet"/>
+
+    <link type="text/css" href="css/side-menu.css" rel="stylesheet" />
+    <link type="text/css" href="css/mobile-menu.css" rel="stylesheet" />
+    <link type="text/css" href="css/icon.css" rel="stylesheet" />
+    <link type="text/css" href="css/reset.css" rel="stylesheet" />
+    <link type="text/css" href="css/picker.css" rel="stylesheet" />
+    <link type="text/css" href="css/picker.date.css" rel="stylesheet" />
+    <link type="text/css" href="css/jquery-popup-message.css" rel="stylesheet" />
+    <link type="text/css" href="css/jquery-harps-event-viewer.css" rel="stylesheet"/>
+    <link type="text/css" href="css/rangeslider.css" rel="stylesheet" />
+    <link type="text/css" href="css/harps.css" rel="stylesheet" />
+    <link type="text/css" href="css/harps-balloon.css" rel="stylesheet" />
+    <link type="text/css" href="css/font-awesome.min.css" rel="stylesheet"/>
+    <link type="text/css" href="css/jquery-ui-1.12.1.custom.min.css" rel="stylesheet"/>
+    <!-- link type="text/css" href="css/jquery-k2go-timeline.css" rel="stylesheet"/ -->
+    <!--link type="text/css" href="css/range_style.css" rel="stylesheet" /-->
+    <!--link type="text/css" href="css/jquery-nict-timeline.css" rel="stylesheet"/-->
+    <style>
+      .mapboxgl-popup {
+        max-width: 400px;
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      // (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      // m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      // })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      // 
+      // ga('create', 'UA-67557410-6', 'auto');
+      // ga('send', 'pageview');
+    </script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GYRBY4Y5D8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GYRBY4Y5D8');
+</script>
+
+    <header class="pc" style="display:none;">
+      <div class="title">
+        <div class="menu_button btn"></div>
+        <!--
+        <img class="hl_logo" src="img/himawari_rt_local.svg" height="34">
+        -->
+        <div class="hl_logo"></div>
+        <div class="submenu_button btn"></div>
+      </div>
+
+      <div class="subtitle"></div>
+      <div class="date" style="display:none;">
+        <div class="date_box">
+          <div class="timezone"></div>
+          <input id="date_now" class="btn" type="text" readonly />
+          <div id="reload_button" class="reload_button btn">
+            <div class="image"></div>
+<!--
+            <div class="image not_latest"></div>
+            <div class="image latest"></div>
+            <div class="image auto_update"></div>
+-->
+          </div>
+        </div>
+      </div>
+      <div id="side-menu" class="pc-menu side-menu pc">
+        <div id="title">
+          <span id="title-span">ローカルひまわり</span>
+          <span id="close-btn"></span>
+          <!--
+          <div id="close-btn"></div>
+          -->
+        </div>
+        <div id="data_select_box"></div>
+        <p id="map_select_box" class="segmented-menu map_color_chg">
+          <span class="segmented">
+            <label>
+              <input type="radio" class="terrain on" map-type-c0="m1" map-type-c1="m3" name="segment" value="1" checked>
+              <span class="label map_name on">地形図</span>
+            </label>
+            <label>
+              <input type="radio" class="roadmap" map-type-c0="m2" map-type-c1="m4" name="segment" value="2">
+              <span class="label map_name">地図</span>
+            </label>
+          </span>
+        </p>
+
+        <!--br>&emsp;地名や郵便番号を入力<br-->
+        <form id="pac-form">
+          <input id="pac-input" class="controls" type="text" placeholder=" 住所検索"/>
+          <!-- button type="submit" style="display: none;">検索</button -->
+        </form>
+
+        <div id="logo">
+          <div class="col2">
+            <div id="nict-sc"></div>
+            <div id="taiyo"></div>
+          </div>
+          <div class="col2">
+            <div id="ceres"></div>
+            <div id="wni"></div>
+          </div>
+          <div class="col2">
+            <div id="nii"></div>
+            <div id="dam"></div>
+          </div>
+          <p class="version">Ver.[version]  最終更新日 [lastupdate]</p>
+        </div>
+      </div>
+      <div id="submenu_area">
+        <ul>
+          <li class="view_url_button" dialog_title="共有URL">
+            <i class="pe-7f pe-7f-right-arrow pe-fw"></i>
+            <span>
+              URL取得
+            </span>
+          </li>
+          <!-- li class="autorun_button">
+            <i class="pe-7f pe-7f-play pe-fw"></i>
+            <span>
+              自動再生設定
+            </span>
+          </li -->
+          <li class="realtime_button">
+            <span>
+              ひまわりリアルタイム
+            </span>
+          </li>
+          <li class="language_button">
+            <span>
+              <a href="./index_e.html" style="text-decoration:none; color:white;">English &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</a>
+            </span>
+          </li>
+          <li class="event_button">
+            <i class="pe-7f pe-7f-download pe-fw"></i>
+            <span>
+              お知らせ・情報
+            </span>
+          </li>
+        </ul>
+      </div>
+    </header>
+    <header class="mobile" style="display:none;">
+      <div class="title">
+        <div class="left"></div>
+        <div class="center">ローカルひまわり</div>
+        <div class="right submenu_button"></div>
+      </div>
+      <div class="date" style="display:none">
+        <div id="timing_bar_left" class="time_prev" style="display:none"></div>
+	<input id="date_now" class="btn" type="text" readonly style="display:none"/>
+        <div class="reload_button btn" style="display:none">
+          <div class="image"></div>
+        </div>
+        <div id="timing_bar_right" class="time_next" style="display:none"></div>
+      </div>
+      <div id="mobile-menu" class="side-menu mobile">
+        <div id="data_select_box"></div>
+        <div id="data_slider_box"></div>
+      </div>
+      <div id="submenu_area">
+        <ul>
+          <!--li class="view_url_button">
+            <i class="pe-7f pe-7f-right-arrow pe-fw"></i>
+            <span>
+              URL取得
+            </span>
+          </li-->
+          <li class="center_button">
+            <i class="pe-7f pe-7f-expand1 pe-fw"></i>
+            <span>
+             リサイズ
+            </span>
+          </li>
+          <li class="playback_button">
+            <i class="pe-7f pe-7f-play pe-fw"></i>
+            <span>
+              コマ送り再生
+            </span>
+          </li>
+          <li class="realtime_button">
+            <span>
+              ひまわりリアルタイム
+            </span>
+          </li>
+          <li class="language_button">
+            <span>
+              <a href="./index_e.html" style="text-decoration:none; color:white;">English &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</a>
+            </span>
+          </li>
+          <li class="event_button">
+            <i class="pe-7f pe-7f-download pe-fw"></i>
+            <span>
+              お知らせ・情報
+            </span>
+          </li>
+        </ul>
+      </div>
+    </header>
+    <div id="map"></div>
+    <div id="zoom_button">
+      <!--
+      <div class="zoom_in btn"><span></span></div>
+      <div class="zoom_out btn"><span></span></div>
+      -->
+    </div>
+
+    <div id="legend"></div>
+    <div id="wwarn_list">
+      <div class="wwarn_box_region">
+        <div class="wwarn_box special_warning" wcode="w32">暴風雪</div>
+        <div class="wwarn_box special_warning" wcode="w33">大雨</div>
+        <div class="wwarn_box special_warning" wcode="w35">暴風</div>
+        <div class="wwarn_box special_warning" wcode="w36">大雪</div>
+        <div class="wwarn_box special_warning" wcode="w37">波浪</div>
+        <div class="wwarn_box special_warning" wcode="w38">高潮</div>
+        <div class="wwarn_box warning" wcode="w02">暴風雪</div>
+        <div class="wwarn_box warning" wcode="w03">大雨</div>
+        <div class="wwarn_box warning" wcode="w04">洪水</div>
+        <div class="wwarn_box warning" wcode="w05">暴風</div>
+        <div class="wwarn_box warning" wcode="w06">大雪</div>
+        <div class="wwarn_box warning" wcode="w07">波浪</div>
+        <div class="wwarn_box warning" wcode="w08">高潮</div>
+        <div class="wwarn_box adovisoly" wcode="w10">大雨</div>
+        <div class="wwarn_box adovisoly" wcode="w12">大雪</div>
+        <div class="wwarn_box adovisoly" wcode="w13">風雪</div>
+        <div class="wwarn_box adovisoly" wcode="w14">雷</div>
+        <div class="wwarn_box adovisoly" wcode="w15">強風</div>
+        <div class="wwarn_box adovisoly" wcode="w16">波浪</div>
+        <div class="wwarn_box adovisoly" wcode="w17">融雪</div>
+        <div class="wwarn_box adovisoly" wcode="w18">洪水</div>
+        <div class="wwarn_box adovisoly" wcode="w19">高潮</div>
+        <div class="wwarn_box adovisoly" wcode="w20">濃霧</div>
+        <div class="wwarn_box adovisoly" wcode="w21">乾燥</div>
+        <div class="wwarn_box adovisoly" wcode="w22">なだれ</div>
+        <div class="wwarn_box adovisoly" wcode="w23">低温</div>
+        <div class="wwarn_box adovisoly" wcode="w24">霜</div>
+        <div class="wwarn_box adovisoly" wcode="w25">着氷</div>
+        <div class="wwarn_box adovisoly" wcode="w26">着雪</div>
+      </div>
+      <div class="no_wwarn_box">現在、表示領域内に注意報・警報は発表されていません。</div>
+    </div>
+    <input id="dummy_focus" type="button" readonly style="position:absolute; top:-99999; left:-99999; opacity:0;height:0;width:0;border:none;padding:0;margin:0;"/>
+
+    <script>
+      // Data label name
+      const DATA_AMJP = "日射量";
+      const DATA_AMJP_NICT_COLOR = "日射量 紫白黄色基調";
+      const DATA_AMJP_TEMP = "地表面気温";
+      const DATA_AMJP_HUMIDITY = "地表面相対湿度";
+      const DATA_AMJP_WND = "地表面風向/風速";
+      //const DATA_AMJP_WNDMZNL = "地表面風向";
+      //const DATA_AMJP_WNDSPD = "地表面風速";
+      const DATA_AMJP_PVP = "PV出力解析値";
+      const DATA_AMJP_NOCT = "公称作動セル温度";
+      const DATA_HIMA = "ひまわり バンド3";
+      const DATA_HIMA_B03 = "バンド3";
+      const DATA_HIMA_B13 = "ひまわり バンド13";
+      const DATA_WNI = "高解像度降水NC";
+      const DATA_RMAP = "赤色立体地図";
+      const DATA_DAMM = "川と流域マップ";
+      //const DATA_RADAR = "気象レーダ";
+      const DATA_RADAR = "高知大 気象レーダ";
+      const DATA_MPRD_PV = "高知 気象レーダ 反射強度";
+      const DATA_MPRD_RZ = "高知 気象レーダ ドップラー速度";
+      const DATA_JRRD_PV = "千葉 気象レーダ 反射強度";
+      const DATA_JRRD_RZ = "千葉 気象レーダ ドップラー速度";
+      const DATA_AMEDAS = "アメダス";
+      const DATA_WEATHER_WARNING = "気象警報";
+      const DATA_ELECTRICAL_STATION = "太陽光発電所";
+      const DATA_AMJP_POINT = "Amaterass数値データ";
+      var AMEDAS_TITLE = "AMeDAS %s"
+      const VIEWURL_TITLE = "共有URL";
+      const WWARN_START_TIME_LABEL = "%Y年%m月%d日 %H時%M分 発表"
+
+      // Javascript messages
+      const GPS_LABEL = "現在地";
+      const GPS_ERR1 = "本ブラウザでは現在地は表示できません。";
+      const GPS_ERR2 = "位置情報が許可されませんでした。";
+
+      // 操作ボタンのポップアップメッセー儀
+      const GPS_POP = "地図上に現在位置を表示します。";
+      const PLAYBACK_POP = "表示時刻の30分前から5分間隔でコマ送りします。";
+      const INIT_POP = "地図の表示を初期表示に戻します。";
+      const UPDATE_POP = "最新時刻を表示します。最新時刻の時は自動更新が開始されます。"
+      const CALENDAR_POP = "カレンダーから日付を指定して移動することができます。";
+    </script>
+    <div id="amedas_dialog"><iframe></iframe></div>
+    <div id="viewurl_dialog"><textarea class="textarea" readonly></textarea></div>
+    <!--
+    <div id="viewurl_dialog"><p class="textarea"></p></div>
+    -->
+  </body>
+  <!-- 2019.03.20 dol-add -->
+  <!-- コマ送り再生時のちらつき防止 -->
+  <style>
+  .leaflet-tile-loaded {
+    transition: opacity 1s ease 0s;
+  }
+  </style>
+  <!-- 2019.03.20 dol-end -->
+</html>

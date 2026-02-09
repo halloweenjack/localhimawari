@@ -1,0 +1,167 @@
+@import url(https://fonts.googleapis.com/css?family=Righteous);
+html {
+  height:100%;
+}
+body {
+  background-color: #999;
+  color: white;
+  margin: 0;
+  padding: 0;
+  height:100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+#menu {
+  width: 320px;
+  height: 100%;
+  background: #444;
+  box-shadow: 5px 0 10px rgba(0,0,0,0.2)
+  pointer-events : auto;
+  z-index : 10000;
+  position : fixed;
+}
+
+h2 {
+  display: block;
+  width: 100%;
+  height: 94px;
+  font-size: 10px;
+  margin: 3px auto 0;
+  text-align: center;
+  background: url(../img/harps_logo.png) no-repeat center center;
+  background-size: 68px 75px;
+}
+
+.tabs {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  width : 100%;
+  height : 115px;
+  transition : 0.5s;
+  transition-property : background;
+}
+.tabs.content1 {
+  background: #0177BD;
+}
+.tabs.content2 {
+  background: #1B5E20;
+}
+.tabs.content3 {
+  background: #B71C1C;
+}
+
+.tab_box {
+  width : 272px;
+  position : absolute;
+  top : 100px;
+  left : 50%;
+  margin-left : -136px;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
+}
+.tab {
+  font-size: 18px;
+  color: rgb(85, 85, 85);
+  float: left;
+  width : 90px;
+  height : 35px;
+  margin: 0 0 0 0;
+  padding: 0;
+  background : white;
+  transition : 0.5s;
+}
+.tab-1 {
+  border-right : solid 1px #ccc;
+}
+.tab-2 {
+  border-right : solid 1px #ccc;
+}
+
+.tab:last-child {
+  margin-right: 0;
+}
+
+.tab p {
+  margin: 0;
+  line-height: 35px;
+  cursor: pointer;
+  text-align: center;
+  width : 100%;
+}
+
+.tab.turnBoxCurrentFace1 > .turnBoxFaceNum1 {
+  background-color: #777;
+}
+
+.tab.turnBoxCurrentFace1 > .turnBoxFaceNum1:hover {
+  background-color: #888;
+}
+
+.tab.turnBoxCurrentFace2 > .turnBoxFaceNum2 {
+  background-color: #1565C0;
+}
+
+.tab .turnBoxFaceNum1 {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.tab .turnBoxFaceNum2 {
+  background-color: rgba(0, 148, 239, 0.1);
+}
+
+.content-box {
+  display: block;
+  font-size: 20px;
+  color: #3f3f3f;
+  margin: 0 auto;
+  margin-top : 30px;
+  padding: 0;
+  height: 300px;
+}
+.tab-1.on {
+  background: #2196F3;
+  color : white;
+}
+.tab-2.on {
+  background: #4CAF50;
+  color : white;
+}
+.tab-3.on {
+  background: #F44336;
+  color : white;
+}
+.content {
+  display : none;
+}
+.content.on{
+  display : block;
+}
+#content1{
+  width : 100%;
+  background-color: #444;
+  color: #fff;
+}
+#content2{
+  width : calc(100% - 20px);
+  background-color: #444;
+  padding-left : 10px;
+  padding-right : 10px;
+  margin-top : 0px!important;
+  color: #fff;
+}
+#content3{
+  width : calc(100% - 20px);
+  padding-left : 10px;
+  padding-right : 10px;
+  background-color: #444;
+  color: #fff;
+}
+
+.content-box.turnBoxCurrentFace1 > .turnBoxFaceNum1, .content-box.turnBoxCurrentFace2 > .turnBoxFaceNum2, .content-box.turnBoxCurrentFace3 > .turnBoxFaceNum3 {
+  background-color: #e2e2e2;
+}
+.content-box .turnBoxFace {
+  background-color: #afafaf;
+}
