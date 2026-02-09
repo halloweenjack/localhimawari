@@ -8,7 +8,7 @@ $(function(){
  * ローカル開発時: "https://sc-gis.nict.go.jp"
  * 本番環境: ""
  */
-const API_BASE_URL = "https://sc-gis.nict.go.jp";
+const API_BASE_URL = "";
 
 /**
  * 地図色の指定
@@ -794,7 +794,6 @@ $.harpsEnv = {
    * 初期表示データ
    */
   defaultMaps : [
-    "amjp", "wwarn"
   ],
   /**
    * 最新時刻を設定するデータ
