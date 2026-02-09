@@ -785,6 +785,37 @@ $.harpsEnv = {
       exclusive : ["amedas"],
       mobileOn : false
     },
+    /**
+     * Camera Layer
+     */
+    {
+      name: "camera",
+      alt: "camera",
+      label: DATA_CAMERA,
+      display: "marker",
+      locations: [], // Managed by internal logic
+      interval: function() { return 300; },
+      start: new Date("2000/01/01 00:00:00"),
+      disable: [],
+      addMarker: function(zoom, tile) {
+        $.harpsModelLocalHIMAWARI.camera.init(zoom, tile);
+      },
+      removeMarker: function(zoom, tile) {
+        $.harpsModelLocalHIMAWARI.camera.removeLayer();
+      },
+      updateMethod: function(zoom, tile) {
+        $.harpsModelLocalHIMAWARI.camera.update();
+      },
+      updateLock: function() { return false; },
+      style: {},
+      zindex: 100, // Top layer
+      zoom_min: 1,
+      zoom_max: 20,
+      sortable: true,
+      update: true,
+      transparent: false,
+      mobileOn: true
+    },
   ],
   /**
    * 画像が存在しない場合に出力する画像

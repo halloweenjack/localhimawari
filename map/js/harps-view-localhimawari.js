@@ -36,6 +36,7 @@ $.harpsViewLocalHIMAWARI = {
     $.harpsViewLocalHIMAWARI.wwarn.init(); 
     $.harpsViewLocalHIMAWARI.amedas.init(); 
     $.harpsViewLocalHIMAWARI.amjpPoint.init(); 
+    $.harpsViewLocalHIMAWARI.camera.init();
     $.harpsViewLocalHIMAWARI.elst.init(); 
     _initSubMenu();
     if(!$.harpsModel.util.isMobileWindow()){
@@ -239,6 +240,18 @@ $.harpsViewLocalHIMAWARI = {
         }
       });
       // 2019.02.21 dol-end
+    }
+  },
+
+  camera : {
+    init : function(){
+       $.harpsModel.map.on("moveend", function(){
+        var zoom = $.harpsModel.map.getZoom();
+        if($("#camera.data").hasClass("on") == true){
+          var tileSetting = $.harpsModel.tiles.get("camera");
+          $.harpsModelLocalHIMAWARI.camera.addLayer(zoom, tileSetting);
+        }
+      });
     }
   },
   elst : {

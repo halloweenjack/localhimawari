@@ -1220,6 +1220,334 @@ $(function () {
         }
       },
     },
+    camera: {
+      data: null,
+      popup: null,
+      _handlers: null,
+      init: function(zoom, tileSetting) {
+        var map = $.harpsModel.map;
+        
+        // Helper to proceed with data loading
+        var loadData = function() {
+            if (!$.harpsModelLocalHIMAWARI.camera.data) {
+              $.getJSON("json/camera_list.json", function(data) {
+                // 同一座標のカメラを検出してオフセット
+                var coordGroups = {};
+                data.forEach(function(item) {
+                  var key = item.lat + "," + item.lng;
+                  if (!coordGroups[key]) coordGroups[key] = [];
+                  coordGroups[key].push(item);
+                });
+                Object.keys(coordGroups).forEach(function(key) {
+                  var group = coordGroups[key];
+                  if (group.length <= 1) return;
+                  var offset = 0.0004; // 約40m
+                  group.forEach(function(item, i) {
+                    var angle = (2 * Math.PI * i) / group.length - Math.PI / 2;
+                    item.lng += offset * Math.cos(angle);
+                    item.lat += offset * Math.sin(angle);
+                  });
+                });
+
+                $.harpsModelLocalHIMAWARI.camera.data = {
+                  "type": "FeatureCollection",
+                  "features": data.map(function(item) {
+                    return {
+                      "type": "Feature",
+                      "properties": item,
+                      "geometry": {
+                        "type": "Point",
+                        "coordinates": [item.lng, item.lat]
+                      }
+                    };
+                  })
+                };
+                $.harpsModelLocalHIMAWARI.camera.addLayer(zoom);
+              }).fail(function() {
+                console.error("Failed to load camera_list.json");
+              });
+            } else {
+              $.harpsModelLocalHIMAWARI.camera.addLayer(zoom);
+            }
+        };
+
+        // Load icon if not present
+        if (!map.hasImage('camera-icon')) {
+            var img = new Image(24, 24);
+            img.onload = function() {
+                map.addImage('camera-icon', img, { sdf: true });
+                loadData();
+            };
+            img.onerror = function() {
+                console.error("Failed to load camera icon");
+                loadData(); // Proceed anyway, maybe fallback or justcircles won't show
+            };
+            img.src = 'img/icon_camera.svg';
+        } else {
+            loadData();
+        }
+      },
+      addLayer: function(zoom) {
+        var map = $.harpsModel.map;
+        if (map.getSource("cameras")) return;
+
+        map.addSource("cameras", {
+          type: "geojson",
+          data: $.harpsModelLocalHIMAWARI.camera.data,
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 50
+        });
+
+        // Clusters
+        // Clusters - Drop Shadow Layer
+        map.addLayer({
+          id: "clusters-shadow",
+          type: "circle",
+          source: "cameras",
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": "#000000",
+            "circle-radius": [
+              "step",
+              ["get", "point_count"],
+              24,
+              10,
+              34,
+              30,
+              44
+            ],
+            "circle-blur": 0.4,
+            "circle-opacity": 0.45,
+            "circle-translate": [0, 2]
+          }
+        });
+
+        map.addLayer({
+          id: "clusters",
+          type: "circle",
+          source: "cameras",
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": [
+              "step",
+              ["get", "point_count"],
+              "#0088FF",    // 0-9: iOS Blue
+              10,
+              "#FF8D28",    // 10-29: iOS Orange
+              30,
+              "#FF383C"     // 30+: iOS Red
+            ],
+            "circle-radius": [
+              "step",
+              ["get", "point_count"],
+              20,
+              10,
+              30,
+              30,
+              40
+            ]
+          }
+        });
+
+        map.addLayer({
+          id: "cluster-count",
+          type: "symbol",
+          source: "cameras",
+          filter: ["has", "point_count"],
+          layout: {
+            "icon-image": "camera-icon",
+            "icon-size": 0.8,
+            "icon-anchor": "bottom",
+            "icon-offset": [0, 3],
+            "text-field": "{point_count_abbreviated}",
+            "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
+            "text-size": 14,
+            "text-anchor": "top",
+            "text-offset": [0, 0.1]
+          },
+          paint: {
+            "icon-color": "#FFFFFF",
+            "text-color": "#FFFFFF"
+          }
+        });
+
+        // Unclustered Points - Drop Shadow Layer
+        map.addLayer({
+          id: "unclustered-point-shadow",
+          type: "circle",
+          source: "cameras",
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-color": "#000000",
+            "circle-radius": 20,
+            "circle-blur": 0.4,
+            "circle-opacity": 0.45,
+            "circle-translate": [0, 2]
+          }
+        });
+
+        // Unclustered Points - Circle Background Layer
+        map.addLayer({
+          id: "unclustered-point-bg",
+          type: "circle",
+          source: "cameras",
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-color": [
+              "match",
+              ["get", "type"],
+              1, "#FF5733", // Type 1: Orange
+              2, "#33FF57", // Type 2: Green
+              3, "#3357FF", // Type 3: Blue
+              4, "#F333FF", // Type 4: Magenta
+              5, "#FFFF33", // Type 5: Yellow
+              "#000000"     // Default: Black
+            ],
+            "circle-radius": 16
+          }
+        });
+
+        // Unclustered Points - Camera Icon Layer (on top)
+        map.addLayer({
+          id: "unclustered-point",
+          type: "symbol",
+          source: "cameras",
+          filter: ["!", ["has", "point_count"]],
+          layout: {
+            "icon-image": "camera-icon",
+            "icon-size": 1.0,
+            "icon-allow-overlap": true
+          },
+          paint: {
+            "icon-color": "#FFFFFF"
+          }
+        });
+
+        // Click events - store handlers for cleanup in removeLayer
+        var handlers = {
+          clusterClick: function(e) {
+            var features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+            var clusterId = features[0].properties.cluster_id;
+            map.getSource("cameras").getClusterExpansionZoom(clusterId, function(err, zoom) {
+              if (err) return;
+              map.easeTo({
+                center: features[0].geometry.coordinates,
+                zoom: zoom
+              });
+            });
+          },
+          cameraClick: function(e) {
+            if ($.harpsModelLocalHIMAWARI.camera.popup) {
+              $.harpsModelLocalHIMAWARI.camera.popup.remove();
+              $.harpsModelLocalHIMAWARI.camera.popup = null;
+            }
+
+            var coordinates = e.features[0].geometry.coordinates.slice();
+            var props = e.features[0].properties;
+
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+              coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            var popupContent = $.harpsModelLocalHIMAWARI.camera.createPopupContent(props);
+
+            var popup = new mapboxgl.Popup({ offset: 20, maxWidth: '280px', className: 'camera-popup-animated' })
+              .setLngLat(coordinates)
+              .setHTML(popupContent)
+              .addTo(map);
+            $.harpsModelLocalHIMAWARI.camera.popup = popup;
+
+            e.originalEvent.stopPropagation();
+          },
+          cursorOn: function() { map.getCanvas().style.cursor = "pointer"; },
+          cursorOff: function() { map.getCanvas().style.cursor = ""; }
+        };
+        $.harpsModelLocalHIMAWARI.camera._handlers = handlers;
+
+        map.on("click", "clusters", handlers.clusterClick);
+        map.on("click", "unclustered-point", handlers.cameraClick);
+        map.on("click", "unclustered-point-bg", handlers.cameraClick);
+        map.on("mouseenter", "clusters", handlers.cursorOn);
+        map.on("mouseleave", "clusters", handlers.cursorOff);
+        map.on("mouseenter", "unclustered-point-bg", handlers.cursorOn);
+        map.on("mouseleave", "unclustered-point-bg", handlers.cursorOff);
+        
+        // Trigger initial update for timeline if needed
+        $.harpsModelLocalHIMAWARI.camera.update();
+      },
+      removeLayer: function() {
+        var map = $.harpsModel.map;
+        if (map.getLayer("clusters")) map.removeLayer("clusters");
+        if (map.getLayer("clusters-shadow")) map.removeLayer("clusters-shadow");
+        if (map.getLayer("cluster-count")) map.removeLayer("cluster-count");
+        if (map.getLayer("unclustered-point")) map.removeLayer("unclustered-point");
+        if (map.getLayer("unclustered-point-bg")) map.removeLayer("unclustered-point-bg");
+        if (map.getLayer("unclustered-point-shadow")) map.removeLayer("unclustered-point-shadow");
+        if (map.getSource("cameras")) map.removeSource("cameras");
+        // イベントリスナー解除
+        var h = $.harpsModelLocalHIMAWARI.camera._handlers;
+        if (h) {
+          map.off("click", "clusters", h.clusterClick);
+          map.off("click", "unclustered-point", h.cameraClick);
+          map.off("click", "unclustered-point-bg", h.cameraClick);
+          map.off("mouseenter", "clusters", h.cursorOn);
+          map.off("mouseleave", "clusters", h.cursorOff);
+          map.off("mouseenter", "unclustered-point-bg", h.cursorOn);
+          map.off("mouseleave", "unclustered-point-bg", h.cursorOff);
+          $.harpsModelLocalHIMAWARI.camera._handlers = null;
+        }
+        if ($.harpsModelLocalHIMAWARI.camera.popup) {
+          $.harpsModelLocalHIMAWARI.camera.popup.remove();
+          $.harpsModelLocalHIMAWARI.camera.popup = null;
+        }
+      },
+      update: function() {
+      },
+      createPopupContent: function(props) {
+        var thumbUrl = $.harpsModelLocalHIMAWARI.camera.getThumbnailUrl(props);
+        
+        var iconCamera = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#333" style="vertical-align:-3px; margin-right:4px; flex-shrink:0;"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>';
+        var html = '<div class="camera-popup" style="width:250px;">';
+        html += '<div style="color:#222; font-weight:bold; font-size:15px; margin-bottom:6px; display:flex; align-items:center;">' + iconCamera + props.name + '</div>';
+        html += '<div style="position:relative; width:100%; padding-top:56.25%; margin-bottom:5px; background:rgba(0,0,0,0.06); border-radius:5px; overflow:hidden;">';
+        html += '<img id="camera-popup-img" data-id="' + props.id + '" src="' + thumbUrl + '" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">';
+        html += '<div style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; align-items:center; justify-content:center; color:#aaa; font-size:13px;">No Image</div>';
+        html += '</div>';
+        var iconGlobe = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><ellipse cx="12" cy="12" rx="4" ry="10"/></svg>';
+        var iconLink = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:4px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+        html += '<div style="display:flex; flex-direction:column; gap:6px; margin-top:6px; font-size:14px;">';
+        if (props.url_hpvt) {
+          var hpvtMatch = props.url_hpvt.match(/\/hpvt\/([^\/]+)\/?$/);
+          var hpvtLink = props.url_hpvt;
+          if (hpvtMatch) {
+            var imgId = props.img_id || props.id;
+            var caption = props.hpvt_caption || imgId;
+            var dateMs = $.harpsModel.time.now ? $.harpsModel.time.now.getTime() : Date.now();
+            hpvtLink = props.url_hpvt + "viewer.html?filename=" + imgId + "&caption=" + caption + "&media=image&date=" + dateMs;
+          }
+          html += '<a href="' + hpvtLink + '" target="_blank">' + iconGlobe + 'HpVT Web</a>';
+        }
+        if (props.url_webrtc) html += '<a href="' + props.url_webrtc + '" target="_blank">' + iconGlobe + 'WebRTC</a>';
+        if (props.url_tm) html += '<a href="' + props.url_tm + '" target="_blank">' + iconLink + 'バーチャル展望台</a>';
+        if (props.url_mp) html += '<a href="' + props.url_mp + '" target="_blank">' + iconLink + 'STARSmp</a>';
+        if (props.url_skyplot) html += '<a href="' + props.url_skyplot + '" target="_blank">' + iconLink + 'SKYPLOT</a>';
+        html += '</div>';
+        html += '</div>';
+        return html;
+      },
+      getThumbnailUrl: function(props) {
+        // URL pattern: https://anzu.shinshu-u.ac.jp/hpvt/vo/{project}/data/picture_s/{id}/latest.jpg
+        if (!props.url_hpvt) return "";
+        var hpvtUrl = props.url_hpvt;
+        // Extract project name from url_hpvt (last path segment)
+        var match = hpvtUrl.match(/\/hpvt\/([^\/]+)\/?$/);
+        if (!match) return "";
+        var project = match[1];
+        var imgId = props.img_id || props.id;
+        return "https://anzu.shinshu-u.ac.jp/hpvt/vo/" + project + "/data/picture_s/" + imgId + "/latest.jpg";
+      }
+    },
     /**
      * 発電所
      */

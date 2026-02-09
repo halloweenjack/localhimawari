@@ -1528,7 +1528,7 @@ $(window).on("load", function () {
         //$.harpsModel.viewurl._set.sI("amedas-0,amjp-1-9,amjp_pvp-0-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_noct-0-4,amjp_wnd-0-4,h8jp-0-10,wni-0-4,radar-0-4,wwarn-1,dam_map-0-4");
         //$.harpsModel.viewurl._set.sI("amjp-1-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_wnd-0-4,h8jp-0-10,h8jp_b13-0-10,wni-0-4,wwarn-1,amedas-0,dam_map-0-4");
         //$.harpsModel.viewurl._set.sI("amjp-1-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_wnd-0-4,h8jp-0-4,h8jp_b13-0-4,wni-0-4,wwarn-1,amedas-0,amjp_point-0-4");
-        $.harpsModel.viewurl._set.sI("amjp-0-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_wnd-0-4,h8jp-0-4,wni-0-4,wwarn-0,amedas-0,amjp_point-0-4");
+        $.harpsModel.viewurl._set.sI("amjp-0-4,amjp_temp-0-4,amjp_humidity-0-4,amjp_wnd-0-4,h8jp-0-4,wni-0-4,wwarn-0,amedas-0,amjp_point-0-4,camera-1");
       }
       console.log("$.harpsModel.viewurl.params.sI =      +");
       //console.log("$.harpsModel.viewurl.params.sI = " + $.harpsModel.viewurl._get.sI());

@@ -202,6 +202,17 @@
   background-size: 16px 16px;
 }
 
+#camera .dctrl_name, #side-menu #camera .ctrl_disabled:hover .dctrl_name {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_camera_menu.svg);
+  background-size: 20px 20px;
+}
+#camera .dctrl_name.off {
+  background: no-repeat 0px center;
+  background-image: url(../img/icon_camera_menu_off.svg);
+  background-size: 20px 20px;
+}
+
 #mobile-menu #data_select_box #amjp {
   background-image : url(../img/icon_sun.svg);
   background-size : 20px 20px;
