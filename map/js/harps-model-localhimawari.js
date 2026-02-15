@@ -1537,15 +1537,16 @@ $(function () {
         return html;
       },
       getThumbnailUrl: function(props) {
-        // URL pattern: https://anzu.shinshu-u.ac.jp/hpvt/vo/{project}/data/picture_s/{id}/latest.jpg
+        // URL pattern: {base}/hpvt/vo/{project}/data/picture_s/{id}/latest.jpg
         if (!props.url_hpvt) return "";
         var hpvtUrl = props.url_hpvt;
-        // Extract project name from url_hpvt (last path segment)
         var match = hpvtUrl.match(/\/hpvt\/([^\/]+)\/?$/);
         if (!match) return "";
         var project = match[1];
         var imgId = props.img_id || props.id;
-        return "https://anzu.shinshu-u.ac.jp/hpvt/vo/" + project + "/data/picture_s/" + imgId + "/latest.jpg";
+        var baseMatch = hpvtUrl.match(/^(https?:\/\/[^\/]+)/);
+        var base = baseMatch ? baseMatch[1] : "https://anzu.shinshu-u.ac.jp";
+        return base + "/hpvt/vo/" + project + "/data/picture_s/" + imgId + "/latest.jpg";
       }
     },
     /**

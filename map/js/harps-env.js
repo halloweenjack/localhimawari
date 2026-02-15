@@ -90,10 +90,10 @@ $.harpsEnv = {
   },
   
   mapOpt : {
-    zoom : 6,
+    zoom : 4,
     maxZoom   : 17,
     minZoom   : 1,
-    center    : new mapboxgl.LngLat(139.250157, 35.541896),
+    center    : new mapboxgl.LngLat(120.0, 25.0),
     bearing   : 0,
     pitch     : 0,
     zoomControl : false,
