@@ -1,0 +1,16 @@
+# Claude Code
+.claude/
+CLAUDE.md
+**/CLAUDE.md
+
+# macOS
+.DS_Store
+
+# ローカル開発用
+server.py
+
+# 参考資料・ソースデータ
+Camera_update_20250602.pdf
+map/json/ip_cameras.csv
+map/json/spresense.csv
+map/json/process_cameras.py

@@ -17,7 +17,17 @@ NICT（情報通信研究機構）が提供する気象・日射量データ可�
 
 ビルドステップは不要。静的ファイルをWebサーバーから配信するだけで動作する。
 
-例: VS Code の Live Server 拡張機能を使用する場合、`index.html` を右クリック → "Open with Live Server" で `http://127.0.0.1:5500` にて起動。
+**推奨: Python プロキシサーバー（APIプロキシ付き）**
+
+```bash
+python3 server.py
+```
+
+→ http://localhost:8000 でアクセス。`/api/*` リクエストは自動的に `https://localhimawari.nict.go.jp` へプロキシされる。
+
+**その他の方法:**
+
+- VS Code の Live Server: `index.html` を右クリック → "Open with Live Server" で `http://127.0.0.1:5500`
 
 ### API設定（API_BASE_URL）
 
@@ -35,14 +45,22 @@ const API_BASE_URL = "";
 
 ### CORSに関する注意
 
-ローカル（`127.0.0.1:5500`）から `sc-gis.nict.go.jp` へのクロスオリジンリクエストは、サーバー側の `Access-Control-Allow-Origin` 設定によりブロックされる場合がある。
+ローカル（`127.0.0.1:5500`）から `localhimawari.nict.go.jp` へのクロスオリジンリクエストは、サーバー側の `Access-Control-Allow-Origin` 設定によりブロックされる場合がある。
 
-CORSエラーが発生する場合は、ローカルプロキシサーバーの導入が必要になる。
+CORSエラーが発生する場合は、プロキシサーバーの使用を推奨。
 
-#### プロキシの例（Node.js）
+#### プロキシサーバーの選択肢
+
+**Python（推奨・同梱）:**
 
 ```bash
-npx local-cors-proxy --proxyUrl https://sc-gis.nict.go.jp --port 8010
+python3 server.py
+```
+
+**Node.js:**
+
+```bash
+npx local-cors-proxy --proxyUrl https://localhimawari.nict.go.jp --port 8010
 ```
 
 この場合、`API_BASE_URL` を `"http://localhost:8010"` に設定する。
